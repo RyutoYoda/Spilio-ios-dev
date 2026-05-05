@@ -22,6 +22,10 @@ const MAPPING = {
   "plus": "add",
   "speaker.wave.2.fill": "volume-up",
   "house.fill": "home",
+  "gearshape.fill": "settings",
+  "sun.max.fill": "light-mode",
+  "moon.fill": "dark-mode",
+  "paperplane.fill": "send",
 } as IconMapping;
 
 export function IconSymbol({
