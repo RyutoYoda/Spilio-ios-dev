@@ -123,7 +123,7 @@ const config: ExpoConfig = {
   ],
   extra: {
     eas: {
-      projectId: "english-master",
+      projectId: "47f3e629-348a-4a4b-9420-5302cc700551",
     },
   },
   experiments: {
