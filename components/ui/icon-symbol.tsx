@@ -26,6 +26,7 @@ const MAPPING = {
   "sun.max.fill": "light-mode",
   "moon.fill": "dark-mode",
   "paperplane.fill": "send",
+  "magnifyingglass": "search",
 } as IconMapping;
 
 export function IconSymbol({

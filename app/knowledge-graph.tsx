@@ -1,6 +1,6 @@
-import { Text, View, ScrollView, Pressable } from "react-native";
+import { Text, View, ScrollView, Pressable, TextInput } from "react-native";
 import { useRouter } from "expo-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
@@ -12,11 +12,42 @@ export default function KnowledgeGraphScreen() {
   const colors = useColors();
   const router = useRouter();
   const { state } = useStore();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const graphData = useMemo(
     () => buildKnowledgeGraph(state.entries, state.favorites),
     [state.entries, state.favorites]
   );
+
+  const filteredGraphData = useMemo(() => {
+    if (!searchQuery.trim()) return graphData;
+
+    const query = searchQuery.toLowerCase().trim();
+    const matchedNodes = graphData.nodes.filter(
+      (node) =>
+        node.label.toLowerCase().includes(query) ||
+        node.category.toLowerCase().includes(query) ||
+        (CATEGORY_LABELS[node.category as GrammarCategory] || "").includes(query)
+    );
+    const matchedNodeIds = new Set(matchedNodes.map((n) => n.id));
+    const matchedEdges = graphData.edges.filter(
+      (edge) => matchedNodeIds.has(edge.source) && matchedNodeIds.has(edge.target)
+    );
+    const matchedCategories = new Set(matchedNodes.map((n) => n.category));
+    const matchedClusters = graphData.clusters
+      .filter((c) => matchedCategories.has(c.category))
+      .map((c) => ({
+        ...c,
+        nodes: c.nodes.filter((n) => matchedNodeIds.has(n.id)),
+      }))
+      .filter((c) => c.nodes.length > 0);
+
+    return {
+      nodes: matchedNodes,
+      edges: matchedEdges,
+      clusters: matchedClusters,
+    };
+  }, [graphData, searchQuery]);
 
   const hasData = graphData.nodes.length > 0;
 
@@ -41,6 +72,46 @@ export default function KnowledgeGraphScreen() {
         <View style={{ width: 38 }} />
       </View>
 
+      {/* Search Bar */}
+      {hasData && (
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: colors.border,
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 14,
+            marginBottom: 16,
+          }}
+        >
+          <IconSymbol name="magnifyingglass" size={18} color={colors.muted} />
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="表現やカテゴリを検索..."
+            placeholderTextColor={colors.muted}
+            returnKeyType="done"
+            style={{
+              flex: 1,
+              paddingVertical: 12,
+              paddingHorizontal: 10,
+              fontSize: 15,
+              color: colors.foreground,
+            }}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable
+              onPress={() => setSearchQuery("")}
+              style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1, padding: 4 }]}
+            >
+              <IconSymbol name="xmark.circle.fill" size={18} color={colors.muted} />
+            </Pressable>
+          )}
+        </View>
+      )}
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Description */}
         <View className="mb-5">
@@ -52,6 +123,15 @@ export default function KnowledgeGraphScreen() {
 
         {hasData ? (
           <>
+            {/* Search results info */}
+            {searchQuery.trim().length > 0 && (
+              <View className="mb-4">
+                <Text className="text-sm text-muted">
+                  「{searchQuery}」の検索結果: {filteredGraphData.nodes.length}件
+                </Text>
+              </View>
+            )}
+
             {/* Stats summary */}
             <View className="flex-row mb-5" style={{ gap: 10 }}>
               <View
@@ -65,7 +145,7 @@ export default function KnowledgeGraphScreen() {
                   borderColor: colors.border,
                 }}
               >
-                <Text className="text-2xl font-bold text-foreground">{graphData.nodes.length}</Text>
+                <Text className="text-2xl font-bold text-foreground">{filteredGraphData.nodes.length}</Text>
                 <Text className="text-xs text-muted mt-1">ノード数</Text>
               </View>
               <View
@@ -79,7 +159,7 @@ export default function KnowledgeGraphScreen() {
                   borderColor: colors.border,
                 }}
               >
-                <Text className="text-2xl font-bold text-foreground">{graphData.clusters.length}</Text>
+                <Text className="text-2xl font-bold text-foreground">{filteredGraphData.clusters.length}</Text>
                 <Text className="text-xs text-muted mt-1">カテゴリ</Text>
               </View>
               <View
@@ -93,20 +173,26 @@ export default function KnowledgeGraphScreen() {
                   borderColor: colors.border,
                 }}
               >
-                <Text className="text-2xl font-bold text-foreground">{graphData.edges.length}</Text>
+                <Text className="text-2xl font-bold text-foreground">{filteredGraphData.edges.length}</Text>
                 <Text className="text-xs text-muted mt-1">つながり</Text>
               </View>
             </View>
 
             {/* Graph visualization */}
-            <KnowledgeGraphView data={graphData} entries={state.entries} />
+            {filteredGraphData.nodes.length > 0 ? (
+              <KnowledgeGraphView data={filteredGraphData} entries={state.entries} />
+            ) : (
+              <View className="items-center py-8">
+                <Text className="text-sm text-muted">一致するノードがありません</Text>
+              </View>
+            )}
 
             {/* Cluster breakdown */}
             <View className="mt-6">
               <Text className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider">
                 カテゴリ別の内訳
               </Text>
-              {graphData.clusters.map((cluster) => (
+              {filteredGraphData.clusters.map((cluster) => (
                 <View
                   key={cluster.category}
                   style={{
