@@ -12,6 +12,7 @@ export interface DiaryEntry {
   id: string;
   date: string; // ISO date
   transcript: string; // what user said
+  correctedTranscript: string; // AI-corrected full text
   corrections: CorrectionItem[];
   grammarScore: number; // 0-100
   pronunciationScore: number; // 0-100
@@ -33,6 +34,8 @@ export interface ReviewQuestion {
   original: string; // wrong expression
   correct: string; // correct expression
   explanation: string;
+  originalSentence?: string; // full original sentence
+  correctedSentence?: string; // full corrected sentence
   mastered: boolean;
   lastReviewed?: string;
 }

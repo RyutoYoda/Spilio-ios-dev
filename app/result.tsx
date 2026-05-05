@@ -48,7 +48,9 @@ export default function ResultScreen() {
   };
 
   const handleShareToX = () => {
-    const text = `${entry.transcript}\n\n📊 Score: ${entry.overallScore}/100\n#Spilio #EnglishDiary`;
+    // Post the corrected (correct) version, not the original with mistakes
+    const correctText = entry.correctedTranscript || entry.transcript;
+    const text = `${correctText}\n\n📊 Score: ${entry.overallScore}/100\n#Spilio #EnglishDiary`;
     const encodedText = encodeURIComponent(text);
     const url = `https://twitter.com/intent/tweet?text=${encodedText}`;
     Linking.openURL(url);
@@ -111,6 +113,22 @@ export default function ResultScreen() {
           </View>
           <Text className="text-base text-foreground leading-relaxed">{entry.transcript}</Text>
         </View>
+
+        {/* Corrected Full Text */}
+        {entry.correctedTranscript && entry.correctedTranscript !== entry.transcript && (
+          <View className="bg-surface rounded-xl p-4 border border-border mb-4" style={{ borderColor: colors.success, borderWidth: 1.5 }}>
+            <View className="flex-row items-center justify-between mb-2">
+              <Text className="text-sm font-medium" style={{ color: colors.success }}>修正後の全文</Text>
+              <Pressable
+                onPress={() => speakText(entry.correctedTranscript)}
+                style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1, padding: 4 }]}
+              >
+                <IconSymbol name="speaker.wave.2.fill" size={20} color={colors.success} />
+              </Pressable>
+            </View>
+            <Text className="text-base text-foreground leading-relaxed">{entry.correctedTranscript}</Text>
+          </View>
+        )}
 
         {/* Corrections */}
         {entry.corrections.length > 0 && (

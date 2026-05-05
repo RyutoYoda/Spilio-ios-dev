@@ -104,6 +104,7 @@ export default function RecordScreen() {
         id: `entry_${Date.now()}`,
         date: new Date().toISOString(),
         transcript: result.transcript,
+        correctedTranscript: result.correctedTranscript || result.transcript,
         corrections: result.corrections,
         grammarScore: result.grammarScore,
         pronunciationScore: result.pronunciationScore,
@@ -112,7 +113,7 @@ export default function RecordScreen() {
       };
       addEntry(entry);
 
-      // Generate review questions from corrections
+      // Generate review questions from corrections (full sentence based)
       if (result.corrections.length > 0) {
         const questions = result.corrections.map((c: any, idx: number) => ({
           id: `review_${Date.now()}_${idx}`,
@@ -120,6 +121,8 @@ export default function RecordScreen() {
           original: c.original,
           correct: c.corrected,
           explanation: c.explanation,
+          originalSentence: result.transcript,
+          correctedSentence: result.correctedTranscript || result.transcript,
           mastered: false,
         }));
         addReviewQuestions(questions);

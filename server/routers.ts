@@ -43,6 +43,7 @@ export const appRouter = router({
 Analyze the text for grammar errors, unnatural expressions, and provide scores.
 Return JSON with this exact structure:
 {
+  "correctedTranscript": "the full corrected version of the entire text with all errors fixed",
   "corrections": [
     {
       "original": "the incorrect phrase",
@@ -56,6 +57,8 @@ Return JSON with this exact structure:
   "overallScore": 0-100,
   "feedback": "brief encouraging feedback in Japanese"
 }
+
+IMPORTANT: "correctedTranscript" must be the COMPLETE corrected version of the entire input text, with all grammar and expression errors fixed. This is the ideal version of what the student was trying to say.
 
 Scoring guidelines:
 - grammarScore: Based on grammatical accuracy (fewer errors = higher score)
@@ -79,6 +82,7 @@ If there are no errors, return empty corrections array and high scores.`,
 
         return {
           transcript,
+          correctedTranscript: analysis.correctedTranscript || transcript,
           corrections: analysis.corrections || [],
           grammarScore: analysis.grammarScore || 50,
           pronunciationScore: analysis.pronunciationScore || 50,

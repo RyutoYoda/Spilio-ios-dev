@@ -11,7 +11,6 @@ export default function ReviewScreen() {
   const { state, markMastered } = useStore();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   const unreviewedQuestions = useMemo(
     () => state.reviewQuestions.filter((q) => !q.mastered),
@@ -22,7 +21,6 @@ export default function ReviewScreen() {
 
   const handleNext = () => {
     setShowAnswer(false);
-    setSelectedOption(null);
     if (currentIndex < unreviewedQuestions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
@@ -30,16 +28,10 @@ export default function ReviewScreen() {
     }
   };
 
-  const handleAnswer = (answer: string) => {
-    setSelectedOption(answer);
-    setShowAnswer(true);
-  };
-
   const handleMastered = () => {
     if (currentQuestion) {
       markMastered(currentQuestion.id);
       setShowAnswer(false);
-      setSelectedOption(null);
       if (currentIndex >= unreviewedQuestions.length - 1) {
         setCurrentIndex(0);
       }
@@ -80,62 +72,94 @@ export default function ReviewScreen() {
         </Text>
       </View>
 
-      {/* Question Card */}
-      <View className="bg-surface rounded-2xl p-6 border border-border mb-6">
-        <Text className="text-sm text-muted mb-2">この表現を正しく言い換えると？</Text>
-        <View className="flex-row items-center">
-          <Text className="text-lg text-foreground flex-1" style={{ color: colors.error }}>
+      {/* Question Card - Full Sentence */}
+      <View className="bg-surface rounded-2xl p-6 border border-border mb-4">
+        <Text className="text-sm text-muted mb-3">この文の間違いを直すと？</Text>
+
+        {/* Show full original sentence with error highlighted */}
+        {currentQuestion.originalSentence ? (
+          <View className="mb-3">
+            <View className="flex-row items-start">
+              <Text className="text-base text-foreground leading-relaxed flex-1">
+                {currentQuestion.originalSentence}
+              </Text>
+              <Pressable
+                onPress={() => speakText(currentQuestion.originalSentence || currentQuestion.original)}
+                style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1, padding: 8 }]}
+              >
+                <IconSymbol name="speaker.wave.2.fill" size={20} color={colors.muted} />
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
+
+        {/* Highlight the specific error */}
+        <View className="bg-background rounded-lg p-3 mt-1">
+          <Text className="text-xs text-muted mb-1">間違い箇所</Text>
+          <Text className="text-base" style={{ color: colors.error }}>
             {currentQuestion.original}
           </Text>
-          <Pressable
-            onPress={() => speakText(currentQuestion.original)}
-            style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1, padding: 8 }]}
-          >
-            <IconSymbol name="speaker.wave.2.fill" size={22} color={colors.muted} />
-          </Pressable>
         </View>
       </View>
 
-      {/* Answer options */}
+      {/* Answer section */}
       {!showAnswer ? (
-        <View className="gap-3">
-          <Pressable
-            onPress={() => handleAnswer(currentQuestion.correct)}
-            style={({ pressed }) => [
-              {
-                backgroundColor: colors.surface,
-                borderRadius: 12,
-                padding: 16,
-                borderWidth: 1,
-                borderColor: colors.border,
-                opacity: pressed ? 0.7 : 1,
-              },
-            ]}
-          >
-            <Text className="text-foreground text-base">答えを見る</Text>
-          </Pressable>
-        </View>
+        <Pressable
+          onPress={() => setShowAnswer(true)}
+          style={({ pressed }) => [
+            {
+              backgroundColor: colors.primary,
+              borderRadius: 12,
+              padding: 16,
+              alignItems: "center",
+              opacity: pressed ? 0.8 : 1,
+            },
+          ]}
+        >
+          <Text className="text-white font-semibold text-base">答えを見る</Text>
+        </Pressable>
       ) : (
         <View>
-          {/* Correct answer */}
-          <View
-            className="rounded-2xl p-5 mb-4"
-            style={{ backgroundColor: `${colors.success}15`, borderWidth: 1, borderColor: colors.success }}
-          >
-            <Text className="text-sm font-medium mb-1" style={{ color: colors.success }}>
-              正しい表現
-            </Text>
-            <View className="flex-row items-center">
-              <Text className="text-lg text-foreground flex-1">{currentQuestion.correct}</Text>
-              <Pressable
-                onPress={() => speakText(currentQuestion.correct)}
-                style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1, padding: 8 }]}
-              >
-                <IconSymbol name="speaker.wave.2.fill" size={22} color={colors.success} />
-              </Pressable>
+          {/* Corrected full sentence */}
+          {currentQuestion.correctedSentence ? (
+            <View
+              className="rounded-2xl p-5 mb-3"
+              style={{ backgroundColor: `${colors.success}15`, borderWidth: 1.5, borderColor: colors.success }}
+            >
+              <Text className="text-sm font-medium mb-2" style={{ color: colors.success }}>
+                正しい全文
+              </Text>
+              <View className="flex-row items-start">
+                <Text className="text-base text-foreground flex-1 leading-relaxed">
+                  {currentQuestion.correctedSentence}
+                </Text>
+                <Pressable
+                  onPress={() => speakText(currentQuestion.correctedSentence || currentQuestion.correct)}
+                  style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1, padding: 8 }]}
+                >
+                  <IconSymbol name="speaker.wave.2.fill" size={22} color={colors.success} />
+                </Pressable>
+              </View>
+            </View>
+          ) : null}
+
+          {/* Specific correction point */}
+          <View className="bg-surface rounded-xl p-4 border border-border mb-4">
+            <Text className="text-xs text-muted mb-2">修正ポイント</Text>
+            <View className="flex-row items-center mb-1">
+              <IconSymbol name="xmark.circle.fill" size={14} color={colors.error} />
+              <Text className="text-sm ml-2" style={{ color: colors.error, textDecorationLine: "line-through" }}>
+                {currentQuestion.original}
+              </Text>
+            </View>
+            <View className="flex-row items-center mb-2">
+              <IconSymbol name="checkmark.circle.fill" size={14} color={colors.success} />
+              <Text className="text-sm ml-2" style={{ color: colors.success }}>
+                {currentQuestion.correct}
+              </Text>
             </View>
             {currentQuestion.explanation ? (
-              <Text className="text-sm text-muted mt-2">{currentQuestion.explanation}</Text>
+              <Text className="text-sm text-muted">{currentQuestion.explanation}</Text>
             ) : null}
           </View>
 
