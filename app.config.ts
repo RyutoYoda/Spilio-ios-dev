@@ -28,11 +28,11 @@ const schemeFromBundleId = `manus${timestamp}`;
 
 const env = {
   // App branding - update these values directly (do not use env vars)
-  appName: "EnglishMaster",
+  appName: "SpeakDiary",
   appSlug: "english-master",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
-  logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663320438082/hanK7pLMkRJxcePsbhXwik/icon-2VMg626KpjiPkLqCUp5gNM.png",
+  logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663320438082/hanK7pLMkRJxcePsbhXwik/app-icon-mg6KQdCkfXR6GbtzbRwD5y.png",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,

@@ -62,6 +62,67 @@ async function startServer() {
     res.json({ ok: true, timestamp: Date.now() });
   });
 
+  // Audio upload endpoint
+  app.post("/api/upload-audio", async (req, res) => {
+    try {
+      const { storagePut, storageGetSignedUrl } = await import("../storage");
+      const chunks: Buffer[] = [];
+      req.on("data", (chunk) => chunks.push(chunk));
+      req.on("end", async () => {
+        try {
+          const buffer = Buffer.concat(chunks);
+          const contentType = req.headers["content-type"] || "audio/webm";
+          
+          // Parse multipart form data manually or accept raw audio
+          let audioBuffer: Buffer;
+          let ext = "webm";
+          
+          if (contentType.includes("multipart/form-data")) {
+            // Find the audio data in multipart
+            const boundary = contentType.split("boundary=")[1];
+            if (boundary) {
+              const parts = buffer.toString("binary").split(`--${boundary}`);
+              for (const part of parts) {
+                if (part.includes("audio") || part.includes("recording")) {
+                  const headerEnd = part.indexOf("\r\n\r\n");
+                  if (headerEnd !== -1) {
+                    const headers = part.slice(0, headerEnd);
+                    if (headers.includes("m4a")) ext = "m4a";
+                    else if (headers.includes("webm")) ext = "webm";
+                    else if (headers.includes("wav")) ext = "wav";
+                    const dataStr = part.slice(headerEnd + 4);
+                    // Remove trailing \r\n
+                    const cleanData = dataStr.endsWith("\r\n") ? dataStr.slice(0, -2) : dataStr;
+                    audioBuffer = Buffer.from(cleanData, "binary");
+                    break;
+                  }
+                }
+              }
+            }
+            if (!audioBuffer!) {
+              audioBuffer = buffer;
+            }
+          } else {
+            audioBuffer = buffer;
+          }
+          
+          const key = `audio/diary_${Date.now()}.${ext}`;
+          const mimeType = ext === "m4a" ? "audio/mp4" : ext === "wav" ? "audio/wav" : "audio/webm";
+          const { key: storedKey } = await storagePut(key, audioBuffer, mimeType);
+          const audioUrl = await storageGetSignedUrl(storedKey);
+          
+          res.json({ audioUrl });
+        } catch (err: any) {
+          console.error("Upload processing error:", err);
+          res.status(500).json({ error: err.message });
+        }
+      });
+    } catch (err: any) {
+      console.error("Upload error:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.use(
     "/api/trpc",
     createExpressMiddleware({

@@ -1,148 +1,115 @@
-import { Text, View, ScrollView, TouchableOpacity } from "react-native";
+import { Text, View, FlatList, Pressable } from "react-native";
 import { useRouter } from "expo-router";
-
 import { ScreenContainer } from "@/components/screen-container";
-import { useProgress } from "@/lib/progress-context";
-import { categories } from "@/data/content";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
-import { useEffect, useMemo } from "react";
+import { useStore } from "@/lib/store-context";
+import { useState } from "react";
 
-export default function HomeScreen() {
-  const router = useRouter();
+export default function DiaryScreen() {
   const colors = useColors();
-  const { state, updateStreak } = useProgress();
+  const router = useRouter();
+  const { state } = useStore();
+  const [isRecording, setIsRecording] = useState(false);
 
-  useEffect(() => {
-    updateStreak();
-  }, []);
+  const handleRecord = () => {
+    router.push("/record");
+  };
 
-  const stats = useMemo(() => {
-    const totalLessons = categories.reduce((sum, cat) => sum + cat.lessons.length, 0);
-    const completedLessons = Object.values(state.lessons).filter((l) => l.completed).length;
-    const totalQuizzes = state.quizResults.length;
-    const correctQuizzes = state.quizResults.filter((r) => r.score > 0).length;
-    const accuracy = totalQuizzes > 0 ? Math.round((correctQuizzes / totalQuizzes) * 100) : 0;
-    const flashcardsKnown = state.flashcards.known.length;
-
-    return { totalLessons, completedLessons, totalQuizzes, accuracy, flashcardsKnown };
-  }, [state]);
-
-  const progressPercent = stats.totalLessons > 0
-    ? Math.round((stats.completedLessons / stats.totalLessons) * 100)
-    : 0;
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+    const weekday = weekdays[date.getDay()];
+    return `${month}/${day} (${weekday})`;
+  };
 
   return (
-    <ScreenContainer className="px-4 pt-4">
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
-        {/* Header */}
-        <View className="mb-6">
-          <Text className="text-2xl font-bold text-foreground">EnglishMaster</Text>
-          <Text className="text-sm text-muted">毎日の学習で英語力を伸ばそう</Text>
+    <ScreenContainer className="px-5 pt-4">
+      {/* Header with streak */}
+      <View className="flex-row items-center justify-between mb-6">
+        <View>
+          <Text className="text-2xl font-bold text-foreground">English Diary</Text>
+          <Text className="text-sm text-muted mt-1">今日のことを英語で話そう</Text>
         </View>
-
-        {/* Streak & Stats */}
-        <View className="flex-row gap-3 mb-6">
-          <View className="flex-1 bg-surface rounded-xl p-4 border border-border items-center">
-            <IconSymbol name="flame.fill" size={24} color={colors.warning} />
-            <Text className="text-2xl font-bold text-foreground mt-1">{state.streak}</Text>
-            <Text className="text-xs text-muted">連続日数</Text>
-          </View>
-          <View className="flex-1 bg-surface rounded-xl p-4 border border-border items-center">
-            <IconSymbol name="star.fill" size={24} color={colors.primary} />
-            <Text className="text-2xl font-bold text-foreground mt-1">{stats.accuracy}%</Text>
-            <Text className="text-xs text-muted">正答率</Text>
-          </View>
-          <View className="flex-1 bg-surface rounded-xl p-4 border border-border items-center">
-            <IconSymbol name="checkmark.circle.fill" size={24} color={colors.success} />
-            <Text className="text-2xl font-bold text-foreground mt-1">{stats.completedLessons}</Text>
-            <Text className="text-xs text-muted">完了レッスン</Text>
-          </View>
+        <View className="flex-row items-center bg-surface px-3 py-2 rounded-full border border-border">
+          <IconSymbol name="flame.fill" size={18} color="#F59E0B" />
+          <Text className="text-base font-bold text-foreground ml-1">{state.streak}</Text>
+          <Text className="text-xs text-muted ml-1">日</Text>
         </View>
+      </View>
 
-        {/* Overall Progress */}
-        <View className="bg-surface rounded-xl p-4 mb-6 border border-border">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-sm font-semibold text-foreground">全体の進捗</Text>
-            <Text className="text-sm text-primary font-semibold">{progressPercent}%</Text>
+      {/* Record Button */}
+      <View className="items-center mb-8">
+        <Pressable
+          onPress={handleRecord}
+          style={({ pressed }) => [
+            {
+              width: 120,
+              height: 120,
+              borderRadius: 60,
+              backgroundColor: colors.primary,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: pressed ? 0.8 : 1,
+              transform: [{ scale: pressed ? 0.95 : 1 }],
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            },
+          ]}
+        >
+          <IconSymbol name="mic.fill" size={48} color="#FFFFFF" />
+        </Pressable>
+        <Text className="text-sm text-muted mt-3">タップして録音開始</Text>
+      </View>
+
+      {/* Past entries */}
+      <View className="flex-1">
+        <Text className="text-lg font-semibold text-foreground mb-3">過去の日記</Text>
+        {state.entries.length === 0 ? (
+          <View className="items-center py-8">
+            <Text className="text-muted text-center">まだ日記がありません{"\n"}マイクボタンを押して始めましょう</Text>
           </View>
-          <View className="h-3 bg-border rounded-full overflow-hidden">
-            <View
-              className="h-full rounded-full bg-primary"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </View>
-          <Text className="text-xs text-muted mt-2">
-            {stats.completedLessons} / {stats.totalLessons} レッスン完了
-          </Text>
-        </View>
-
-        {/* Quick Actions */}
-        <Text className="text-base font-semibold text-foreground mb-3">クイックスタート</Text>
-        <View className="flex-row gap-3 mb-6">
-          <TouchableOpacity
-            className="flex-1 bg-primary rounded-xl p-4 items-center"
-            activeOpacity={0.8}
-            onPress={() => router.push("/(tabs)/learn")}
-          >
-            <Text className="text-white text-2xl mb-1">📖</Text>
-            <Text className="text-white font-medium text-sm">レッスン</Text>
-            <Text className="text-white/70 text-xs">インプット</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="flex-1 bg-secondary rounded-xl p-4 items-center"
-            activeOpacity={0.8}
-            onPress={() => router.push("/flashcards" as any)}
-          >
-            <Text className="text-white text-2xl mb-1">🃏</Text>
-            <Text className="text-white font-medium text-sm">カード</Text>
-            <Text className="text-white/70 text-xs">インプット</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="flex-1 bg-success rounded-xl p-4 items-center"
-            activeOpacity={0.8}
-            onPress={() => router.push("/(tabs)/practice")}
-          >
-            <Text className="text-white text-2xl mb-1">✍️</Text>
-            <Text className="text-white font-medium text-sm">練習</Text>
-            <Text className="text-white/70 text-xs">アウトプット</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Category Progress */}
-        <Text className="text-base font-semibold text-foreground mb-3">カテゴリ別進捗</Text>
-        {categories.map((cat) => {
-          const catLessons = Object.entries(state.lessons).filter(
-            ([key]) => key.startsWith(`${cat.id}:`)
-          );
-          const completed = catLessons.filter(([, v]) => v.completed).length;
-          const total = cat.lessons.length;
-          const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-          return (
-            <TouchableOpacity
-              key={cat.id}
-              className="bg-surface rounded-xl p-3 mb-2 border border-border flex-row items-center"
-              activeOpacity={0.7}
-              onPress={() => router.push(`/learn/${cat.id}` as any)}
-            >
-              <Text className="text-lg mr-3">{cat.icon}</Text>
-              <View className="flex-1">
-                <View className="flex-row justify-between items-center">
-                  <Text className="text-sm font-medium text-foreground">{cat.titleJa}</Text>
-                  <Text className="text-xs text-muted">{pct}%</Text>
+        ) : (
+          <FlatList
+            data={state.entries}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item }) => (
+              <Pressable
+                onPress={() => router.push(`/entry/${item.id}` as any)}
+                style={({ pressed }) => [
+                  {
+                    backgroundColor: colors.surface,
+                    borderRadius: 12,
+                    padding: 16,
+                    marginBottom: 10,
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    opacity: pressed ? 0.7 : 1,
+                  },
+                ]}
+              >
+                <View className="flex-row items-center justify-between mb-2">
+                  <Text className="text-sm font-medium text-muted">{formatDate(item.date)}</Text>
+                  <View className="flex-row items-center">
+                    <Text className="text-sm font-bold" style={{ color: colors.primary }}>
+                      {item.overallScore}点
+                    </Text>
+                  </View>
                 </View>
-                <View className="h-1.5 bg-border rounded-full overflow-hidden mt-1">
-                  <View
-                    className="h-full rounded-full"
-                    style={{ width: `${pct}%`, backgroundColor: cat.color }}
-                  />
-                </View>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+                <Text className="text-foreground" numberOfLines={2}>
+                  {item.transcript}
+                </Text>
+              </Pressable>
+            )}
+          />
+        )}
+      </View>
     </ScreenContainer>
   );
 }
