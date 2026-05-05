@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Pressable, Alert } from "react-native";
+import { Text, View, ScrollView, Pressable, Alert, Platform } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useMemo, useRef } from "react";
 import { ScreenContainer } from "@/components/screen-container";
@@ -55,21 +55,29 @@ export default function ResultScreen() {
   };
 
   const handleDelete = () => {
-    Alert.alert(
-      "日記を削除",
-      "この日記を削除して取り直しますか？関連する復習問題も削除されます。",
-      [
-        { text: "キャンセル", style: "cancel" },
-        {
-          text: "削除して取り直す",
-          style: "destructive",
-          onPress: () => {
-            deleteEntry(entry.id);
-            router.replace("/record");
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm("この日記を削除して取り直しますか？関連する復習問題も削除されます。");
+      if (confirmed) {
+        deleteEntry(entry.id);
+        router.replace("/record");
+      }
+    } else {
+      Alert.alert(
+        "日記を削除",
+        "この日記を削除して取り直しますか？関連する復習問題も削除されます。",
+        [
+          { text: "キャンセル", style: "cancel" },
+          {
+            text: "削除して取り直す",
+            style: "destructive",
+            onPress: () => {
+              deleteEntry(entry.id);
+              router.replace("/record");
+            },
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (

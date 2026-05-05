@@ -1,4 +1,4 @@
-import { Text, View, Pressable, ActivityIndicator } from "react-native";
+import { Text, View, Pressable, ActivityIndicator, Alert, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useState, useEffect, useRef } from "react";
 import { ScreenContainer } from "@/components/screen-container";
@@ -14,7 +14,7 @@ import {
   requestRecordingPermissionsAsync,
   setAudioModeAsync,
 } from "expo-audio";
-import { Platform } from "react-native";
+
 
 export default function RecordScreen() {
   const colors = useColors();
@@ -130,9 +130,26 @@ export default function RecordScreen() {
 
       // Navigate to result
       router.replace(`/result?entryId=${entry.id}` as any);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Analysis failed:", error);
       setIsAnalyzing(false);
+
+      const errorMsg = error?.message || "";
+      if (errorMsg.includes("JAPANESE_DETECTED")) {
+        const msg = "英語で話してください\n\nこのアプリは英語の練習用です。\n今日あったことを英語で話してみましょう。";
+        if (Platform.OS === "web") {
+          window.alert(msg);
+        } else {
+          Alert.alert("英語で話してね", "このアプリは英語の練習用です。\n今日あったことを英語で話してみましょう。");
+        }
+      } else {
+        const msg = "分析に失敗しました。もう一度お試しください。";
+        if (Platform.OS === "web") {
+          window.alert(msg);
+        } else {
+          Alert.alert("エラー", msg);
+        }
+      }
     }
   };
 

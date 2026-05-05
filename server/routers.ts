@@ -34,6 +34,16 @@ export const appRouter = router({
 
         const transcript = transcription.text;
 
+        // Step 1.5: Check if the transcript is primarily in Japanese (reject non-English input)
+        const japaneseRegex = /[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/;
+        const japaneseChars = (transcript.match(/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFF]/g) || []).length;
+        const totalChars = transcript.replace(/\s/g, "").length;
+        const japaneseRatio = totalChars > 0 ? japaneseChars / totalChars : 0;
+
+        if (japaneseRatio > 0.3) {
+          throw new Error("JAPANESE_DETECTED: 英語で話してください。このアプリは英語の練習用です。");
+        }
+
         // Step 2: Analyze with LLM for grammar, corrections, and scoring
         const analysisResponse = await invokeLLM({
           messages: [

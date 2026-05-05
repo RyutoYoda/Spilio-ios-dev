@@ -124,7 +124,51 @@ describe("Knowledge Graph - buildKnowledgeGraph", () => {
 
     const result = buildKnowledgeGraph(entries, []);
     expect(result.nodes.length).toBe(2);
-    // Both are tense-related, should be connected
+    // Both are tense-related (same category) + same diary date, should be connected
+    expect(result.edges.length).toBeGreaterThan(0);
+  });
+
+  it("should create edges between related categories", () => {
+    const entries: DiaryEntry[] = [
+      {
+        id: "entry_1",
+        date: "2025-01-01T00:00:00.000Z",
+        transcript: "I go yesterday",
+        correctedTranscript: "I went yesterday",
+        corrections: [
+          {
+            original: "go",
+            corrected: "went",
+            explanation: "Use past tense for past events",
+          },
+        ],
+        grammarScore: 70,
+        pronunciationScore: 80,
+        fluencyScore: 75,
+        overallScore: 75,
+      },
+      {
+        id: "entry_2",
+        date: "2025-01-02T00:00:00.000Z",
+        transcript: "I have eat lunch",
+        correctedTranscript: "I have eaten lunch",
+        corrections: [
+          {
+            original: "have eat",
+            corrected: "have eaten",
+            explanation: "Use the past participle verb form after 'have'",
+          },
+        ],
+        grammarScore: 70,
+        pronunciationScore: 80,
+        fluencyScore: 75,
+        overallScore: 75,
+      },
+    ];
+
+    const result = buildKnowledgeGraph(entries, []);
+    expect(result.nodes.length).toBe(2);
+    // tense and verb_form are related categories, should be connected
     expect(result.edges.length).toBeGreaterThan(0);
   });
 });

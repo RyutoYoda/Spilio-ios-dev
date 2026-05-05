@@ -146,21 +146,39 @@ export function classifyCategory(explanation: string, original: string, correcte
 }
 
 /**
- * 2つのノード間の関連度を計算（0〜1）
+ * 関連カテゴリの定義（近いカテゴリ同士も線で結ぶ）
  */
-function calculateSimilarity(a: GraphNode, b: GraphNode): number {
-  // 同じカテゴリなら基本スコア
-  if (a.category === b.category) return 0.7;
+const RELATED_CATEGORIES: Record<GrammarCategory, GrammarCategory[]> = {
+  tense: ["verb_form"],
+  preposition: ["word_order"],
+  article: ["plural"],
+  plural: ["article", "pronoun"],
+  pronoun: ["plural"],
+  word_order: ["preposition", "conjunction"],
+  vocabulary: ["conjunction"],
+  conjunction: ["word_order", "vocabulary"],
+  verb_form: ["tense"],
+  other: [],
+};
 
-  // テキストの単語重複で追加スコア
-  const wordsA = new Set(a.fullText.toLowerCase().split(/\s+/));
-  const wordsB = new Set(b.fullText.toLowerCase().split(/\s+/));
-  let overlap = 0;
-  for (const w of wordsA) {
-    if (wordsB.has(w) && w.length > 2) overlap++;
-  }
-  const similarity = overlap / Math.max(wordsA.size, wordsB.size, 1);
-  return similarity * 0.5;
+/**
+ * エッジ生成のための接続判定
+ * - 同カテゴリ内は必ず接続
+ * - 関連カテゴリ間も接続
+ * - 同じ日記からのノードも接続
+ */
+function shouldConnect(a: GraphNode, b: GraphNode): boolean {
+  // 同じカテゴリなら必ず接続
+  if (a.category === b.category) return true;
+
+  // 関連カテゴリなら接続
+  const relatedA = RELATED_CATEGORIES[a.category] || [];
+  if (relatedA.includes(b.category)) return true;
+
+  // 同じ日記からのノードなら接続
+  if (a.diaryDate && b.diaryDate && a.diaryDate === b.diaryDate) return true;
+
+  return false;
 }
 
 /**
@@ -213,12 +231,11 @@ export function buildKnowledgeGraph(
     });
   }
 
-  // エッジを生成（同カテゴリ内 + 類似度が高いもの）
+  // エッジを生成（同カテゴリ・関連カテゴリ・同日記のノードを接続）
   const edges: GraphEdge[] = [];
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
-      const sim = calculateSimilarity(nodes[i], nodes[j]);
-      if (sim >= 0.5) {
+      if (shouldConnect(nodes[i], nodes[j])) {
         edges.push({ source: nodes[i].id, target: nodes[j].id });
       }
     }
