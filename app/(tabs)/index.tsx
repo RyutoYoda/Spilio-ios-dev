@@ -61,6 +61,45 @@ export default function DiaryScreen() {
         )}
       </View>
 
+      {/* Knowledge Graph Link */}
+      {state.entries.length > 0 && (
+        <Pressable
+          onPress={() => router.push("/knowledge-graph" as any)}
+          style={({ pressed }) => [
+            {
+              backgroundColor: colors.surface,
+              borderRadius: 14,
+              padding: 14,
+              marginBottom: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              flexDirection: "row",
+              alignItems: "center",
+              opacity: pressed ? 0.7 : 1,
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+            },
+          ]}
+        >
+          <View
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              backgroundColor: `${colors.primary}12`,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <IconSymbol name="arrow.clockwise" size={18} color={colors.primary} />
+          </View>
+          <View className="ml-3 flex-1">
+            <Text className="text-sm font-medium text-foreground">ナレッジグラフ</Text>
+            <Text className="text-xs text-muted">学んだ表現を可視化</Text>
+          </View>
+          <IconSymbol name="chevron.right" size={16} color={colors.muted} />
+        </Pressable>
+      )}
+
       {/* Record Button - Hero Area */}
       <View className="items-center mb-10">
         <Pressable
