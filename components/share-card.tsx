@@ -58,7 +58,7 @@ export const ShareCard = forwardRef<View, ShareCardProps>(
 
         {/* Header */}
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <Text style={{ fontSize: 20, fontWeight: "800", color: "#FFFFFF" }}>Spilio</Text>
+          <Text style={{ fontSize: 20, fontWeight: "800", color: "#FFFFFF", fontFamily: "SpaceGrotesk_700Bold", letterSpacing: -0.5 }}>Spilio</Text>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <Text style={{ fontSize: 14, color: "#9BA1A6" }}>{formatDate(date)}</Text>
             {streak > 0 && (

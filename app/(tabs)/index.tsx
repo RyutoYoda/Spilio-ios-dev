@@ -34,7 +34,10 @@ export default function DiaryScreen() {
       {/* Header */}
       <View className="flex-row items-center justify-between mb-8">
         <View>
-          <Text className="text-3xl font-bold text-foreground tracking-tight">Spilio</Text>
+          <Text
+            style={{ fontFamily: "SpaceGrotesk_700Bold", fontSize: 30, letterSpacing: -1 }}
+            className="text-foreground"
+          >Spilio</Text>
           <Text className="text-sm text-muted mt-0.5">今日のことを英語で話そう</Text>
         </View>
         {state.streak > 0 && (

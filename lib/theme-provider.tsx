@@ -50,6 +50,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         "color-success": SchemeColors[colorScheme].success,
         "color-warning": SchemeColors[colorScheme].warning,
         "color-error": SchemeColors[colorScheme].error,
+        "color-secondary": (SchemeColors[colorScheme] as any).secondary || "#7C3AED",
       }),
     [colorScheme],
   );

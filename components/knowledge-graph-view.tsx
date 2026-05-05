@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, Pressable, Dimensions } from "react-native";
+import { View, Text, Pressable, Dimensions, ScrollView } from "react-native";
 import Svg, { Circle, Line, G, Text as SvgText } from "react-native-svg";
 import { useColors } from "@/hooks/use-colors";
 import {
@@ -8,9 +8,11 @@ import {
   CATEGORY_COLORS,
   CATEGORY_LABELS,
 } from "@/lib/knowledge-graph";
+import { DiaryEntry } from "@/lib/store-context";
 
 interface Props {
   data: KnowledgeGraphData;
+  entries?: DiaryEntry[];
   onNodePress?: (node: GraphNode) => void;
 }
 
@@ -69,7 +71,7 @@ function layoutNodes(data: KnowledgeGraphData, width: number, height: number): P
   return positioned;
 }
 
-export function KnowledgeGraphView({ data, onNodePress }: Props) {
+export function KnowledgeGraphView({ data, entries, onNodePress }: Props) {
   const colors = useColors();
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
   const screenWidth = Dimensions.get("window").width - 40;
@@ -87,6 +89,15 @@ export function KnowledgeGraphView({ data, onNodePress }: Props) {
     }
     return map;
   }, [positionedNodes]);
+
+  // ノードに関連する日記を見つける
+  const relatedEntry = useMemo(() => {
+    if (!selectedNode || !entries) return null;
+    if (selectedNode.diaryDate) {
+      return entries.find((e) => e.date === selectedNode.diaryDate) || null;
+    }
+    return null;
+  }, [selectedNode, entries]);
 
   const handleNodePress = (node: GraphNode) => {
     setSelectedNode(node);
@@ -213,7 +224,7 @@ export function KnowledgeGraphView({ data, onNodePress }: Props) {
         ))}
       </View>
 
-      {/* Selected node detail */}
+      {/* Selected node detail + diary full text */}
       {selectedNode && (
         <Pressable
           onPress={() => setSelectedNode(null)}
@@ -238,7 +249,11 @@ export function KnowledgeGraphView({ data, onNodePress }: Props) {
             />
             <Text style={{ fontSize: 12, color: colors.muted }}>
               {CATEGORY_LABELS[selectedNode.category]}
-              {selectedNode.type === "favorite" ? " / お気に入り" : " / 修正"}
+              {selectedNode.type === "favorite"
+                ? " / お気に入り"
+                : selectedNode.type === "expression"
+                ? " / 使用した表現"
+                : " / 修正"}
             </Text>
           </View>
 
@@ -255,7 +270,7 @@ export function KnowledgeGraphView({ data, onNodePress }: Props) {
             </>
           )}
 
-          {selectedNode.type === "favorite" && (
+          {(selectedNode.type === "favorite" || selectedNode.type === "expression") && (
             <Text style={{ fontSize: 14, color: colors.foreground, marginBottom: 4 }}>
               {selectedNode.fullText}
             </Text>
@@ -265,6 +280,35 @@ export function KnowledgeGraphView({ data, onNodePress }: Props) {
             <Text style={{ fontSize: 12, color: colors.muted, lineHeight: 18 }}>
               {selectedNode.explanation}
             </Text>
+          )}
+
+          {/* 日記本文全体を表示 */}
+          {relatedEntry && (
+            <View
+              style={{
+                marginTop: 12,
+                paddingTop: 12,
+                borderTopWidth: 1,
+                borderTopColor: colors.border,
+              }}
+            >
+              <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 6, fontWeight: "600" }}>
+                日記の全文
+              </Text>
+              <Text style={{ fontSize: 13, color: colors.foreground, lineHeight: 20 }}>
+                {relatedEntry.correctedTranscript || relatedEntry.transcript}
+              </Text>
+              {relatedEntry.correctedTranscript && relatedEntry.correctedTranscript !== relatedEntry.transcript && (
+                <View style={{ marginTop: 8 }}>
+                  <Text style={{ fontSize: 11, color: colors.muted, marginBottom: 4 }}>
+                    元の文
+                  </Text>
+                  <Text style={{ fontSize: 12, color: colors.muted, lineHeight: 18, fontStyle: "italic" }}>
+                    {relatedEntry.transcript}
+                  </Text>
+                </View>
+              )}
+            </View>
           )}
 
           <Text style={{ fontSize: 10, color: colors.muted, marginTop: 8, textAlign: "right" }}>

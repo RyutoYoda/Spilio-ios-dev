@@ -99,7 +99,7 @@ export default function KnowledgeGraphScreen() {
             </View>
 
             {/* Graph visualization */}
-            <KnowledgeGraphView data={graphData} />
+            <KnowledgeGraphView data={graphData} entries={state.entries} />
 
             {/* Cluster breakdown */}
             <View className="mt-6">

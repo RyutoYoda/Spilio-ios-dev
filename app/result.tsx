@@ -9,6 +9,7 @@ import { ShareCard } from "@/components/share-card";
 import { shareToFriends } from "@/lib/share-utils";
 import ViewShot from "react-native-view-shot";
 import * as Speech from "expo-speech";
+import { openBrowserAsync } from "expo-web-browser";
 
 export default function ResultScreen() {
   const colors = useColors();
@@ -52,6 +53,15 @@ export default function ResultScreen() {
 
   const handleShare = () => {
     shareToFriends(viewShotRef);
+  };
+
+  const handlePostToX = () => {
+    const text = entry.correctedTranscript || entry.transcript;
+    const scoreText = `Score: ${entry.overallScore}/100`;
+    const hashtag = "Spilio";
+    const tweetText = `${text}\n\n${scoreText} #${hashtag}`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+    openBrowserAsync(url);
   };
 
   const handleDelete = () => {
@@ -419,6 +429,27 @@ export default function ResultScreen() {
         >
           <IconSymbol name="paperplane.fill" size={18} color="#FFFFFF" />
           <Text className="text-white font-semibold text-base ml-2">友達にシェア</Text>
+        </Pressable>
+
+        {/* X (Twitter) 投稿ボタン */}
+        <Pressable
+          onPress={handlePostToX}
+          style={({ pressed }) => [
+            {
+              backgroundColor: "#000000",
+              borderRadius: 14,
+              padding: 16,
+              alignItems: "center",
+              flexDirection: "row",
+              justifyContent: "center",
+              marginTop: 10,
+              opacity: pressed ? 0.85 : 1,
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+            },
+          ]}
+        >
+          <Text style={{ fontSize: 18, fontWeight: "700", color: "#FFFFFF" }}>X</Text>
+          <Text className="text-white font-semibold text-base ml-2">に投稿する</Text>
         </Pressable>
 
         <Pressable
