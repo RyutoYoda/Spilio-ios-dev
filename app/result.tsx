@@ -211,6 +211,65 @@ export default function ResultScreen() {
             <Text className="text-base text-foreground leading-relaxed">
               {entry.correctedTranscript}
             </Text>
+            <Pressable
+              onPress={() => handleAddFavorite(entry.correctedTranscript, "日記の修正後全文")}
+              style={({ pressed }) => [
+                {
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
+                  borderRadius: 10,
+                  backgroundColor: `${colors.primary}08`,
+                  alignSelf: "flex-start",
+                  opacity: pressed ? 0.6 : 1,
+                  marginTop: 12,
+                },
+              ]}
+            >
+              <IconSymbol name="heart" size={14} color={colors.primary} />
+              <Text className="text-sm ml-1.5 font-medium" style={{ color: colors.primary }}>
+                お気に入りに追加
+              </Text>
+            </Pressable>
+          </View>
+        )}
+
+        {/* Add favorite for transcript when no corrections */}
+        {entry.corrections.length === 0 && (
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 16,
+              padding: 18,
+              borderWidth: 1,
+              borderColor: colors.border,
+              marginBottom: 14,
+            }}
+          >
+            <Text className="text-base text-foreground leading-relaxed mb-3">
+              {entry.transcript}
+            </Text>
+            <Pressable
+              onPress={() => handleAddFavorite(entry.transcript, "日記の表現")}
+              style={({ pressed }) => [
+                {
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 8,
+                  paddingHorizontal: 12,
+                  borderRadius: 10,
+                  backgroundColor: `${colors.primary}08`,
+                  alignSelf: "flex-start",
+                  opacity: pressed ? 0.6 : 1,
+                },
+              ]}
+            >
+              <IconSymbol name="heart" size={14} color={colors.primary} />
+              <Text className="text-sm ml-1.5 font-medium" style={{ color: colors.primary }}>
+                お気に入りに追加
+              </Text>
+            </Pressable>
           </View>
         )}
 

@@ -75,9 +75,11 @@ describe("Knowledge Graph - buildKnowledgeGraph", () => {
     ];
 
     const result = buildKnowledgeGraph(entries, []);
-    expect(result.nodes.length).toBe(1);
-    expect(result.nodes[0].type).toBe("correction");
-    expect(result.nodes[0].category).toBe("tense");
+    // correction node + expression nodes from correctedTranscript
+    expect(result.nodes.length).toBeGreaterThanOrEqual(1);
+    const correctionNodes = result.nodes.filter(n => n.type === "correction");
+    expect(correctionNodes.length).toBe(1);
+    expect(correctionNodes[0].category).toBe("tense");
     expect(result.clusters.length).toBeGreaterThan(0);
   });
 
@@ -123,7 +125,10 @@ describe("Knowledge Graph - buildKnowledgeGraph", () => {
     ];
 
     const result = buildKnowledgeGraph(entries, []);
-    expect(result.nodes.length).toBe(2);
+    // 2 correction nodes + expression nodes from correctedTranscript
+    const corrNodes = result.nodes.filter(n => n.type === "correction");
+    expect(corrNodes.length).toBe(2);
+    expect(result.nodes.length).toBeGreaterThanOrEqual(2);
     // Both are tense-related (same category) + same diary date, should be connected
     expect(result.edges.length).toBeGreaterThan(0);
   });
@@ -167,7 +172,10 @@ describe("Knowledge Graph - buildKnowledgeGraph", () => {
     ];
 
     const result = buildKnowledgeGraph(entries, []);
-    expect(result.nodes.length).toBe(2);
+    // 2 correction nodes + expression nodes from correctedTranscripts
+    const correctionNodesResult = result.nodes.filter(n => n.type === "correction");
+    expect(correctionNodesResult.length).toBe(2);
+    expect(result.nodes.length).toBeGreaterThanOrEqual(2);
     // tense and verb_form are related categories, should be connected
     expect(result.edges.length).toBeGreaterThan(0);
   });

@@ -1,8 +1,8 @@
 /**
  * Knowledge Graph - 文法カテゴリ分類とグラフデータ生成
  *
- * 修正ポイントやお気に入り表現を文法カテゴリに分類し、
- * ノードとエッジのデータ構造を生成する。
+ * 日記の正しい表現（correctedTranscript）から文法要素を抽出し、
+ * 修正ポイントやお気に入り表現と合わせてノードとエッジのデータ構造を生成する。
  */
 
 import { CorrectionItem, DiaryEntry, FavoriteExpression } from "./store-context";
@@ -25,7 +25,7 @@ export interface GraphNode {
   label: string;         // 表示テキスト（短縮版）
   fullText: string;      // 全文
   category: GrammarCategory;
-  type: "correction" | "favorite";
+  type: "correction" | "favorite" | "expression";
   corrected?: string;    // 正しい表現
   explanation?: string;
   diaryDate?: string;
@@ -146,6 +146,73 @@ export function classifyCategory(explanation: string, original: string, correcte
 }
 
 /**
+ * 文から文法要素を抽出する
+ * correctedTranscript全体から、使われている文法パターンを検出してノードを生成
+ */
+const GRAMMAR_PATTERNS: { category: GrammarCategory; pattern: RegExp; label: string }[] = [
+  // 時制パターン
+  { category: "tense", pattern: /\b(was|were|had|did|went|came|got|made|took|gave|said|told)\b/i, label: "Past tense" },
+  { category: "tense", pattern: /\b(have|has)\s+(been|had|done|gone|seen|made|taken)\b/i, label: "Present perfect" },
+  { category: "tense", pattern: /\b(will|going to|gonna)\b/i, label: "Future tense" },
+  { category: "tense", pattern: /\b(am|is|are)\s+\w+ing\b/i, label: "Progressive" },
+
+  // 前置詞パターン
+  { category: "preposition", pattern: /\b(in the|on the|at the|to the|from the)\b/i, label: "Preposition + article" },
+  { category: "preposition", pattern: /\b(interested in|good at|afraid of|tired of)\b/i, label: "Adj + preposition" },
+
+  // 冠詞パターン
+  { category: "article", pattern: /\b(a|an)\s+\w+/i, label: "Indefinite article" },
+  { category: "article", pattern: /\bthe\s+\w+/i, label: "Definite article" },
+
+  // 接続詞パターン
+  { category: "conjunction", pattern: /\b(because|since|although|even though|while)\b/i, label: "Subordinating conj." },
+  { category: "conjunction", pattern: /\b(however|therefore|moreover|furthermore)\b/i, label: "Conjunctive adverb" },
+
+  // 動詞の形パターン
+  { category: "verb_form", pattern: /\b(to\s+\w+)\b/i, label: "Infinitive" },
+  { category: "verb_form", pattern: /\b\w+ing\b.*\b(is|was|enjoy|like|love|hate|keep|start|stop|finish)\b/i, label: "Gerund" },
+  { category: "verb_form", pattern: /\b(can|could|should|would|might|must|may)\s+\w+/i, label: "Modal verb" },
+
+  // 複数形パターン
+  { category: "plural", pattern: /\b(many|several|few|some|all|most)\s+\w+s\b/i, label: "Plural quantifier" },
+
+  // 代名詞パターン
+  { category: "pronoun", pattern: /\b(myself|yourself|himself|herself|themselves|ourselves)\b/i, label: "Reflexive pronoun" },
+  { category: "pronoun", pattern: /\b(which|that|who|whom)\b.*\b(is|was|are|were|have|has)\b/i, label: "Relative pronoun" },
+];
+
+/**
+ * correctedTranscriptから文法要素ノードを抽出する
+ */
+function extractGrammarNodes(text: string, entryId: string, date: string): GraphNode[] {
+  const nodes: GraphNode[] = [];
+  const seenCategories = new Set<string>();
+
+  for (const { category, pattern, label } of GRAMMAR_PATTERNS) {
+    const match = text.match(pattern);
+    if (match) {
+      // 同じカテゴリ+ラベルの重複を避ける
+      const key = `${category}_${label}`;
+      if (seenCategories.has(key)) continue;
+      seenCategories.add(key);
+
+      const matchedText = match[0].trim();
+      nodes.push({
+        id: `expr_${entryId}_${category}_${label.replace(/\s+/g, "_")}`,
+        label: matchedText.length > 20 ? matchedText.slice(0, 20) + "..." : matchedText,
+        fullText: matchedText,
+        category,
+        type: "expression",
+        explanation: label,
+        diaryDate: date,
+      });
+    }
+  }
+
+  return nodes;
+}
+
+/**
  * 関連カテゴリの定義（近いカテゴリ同士も線で結ぶ）
  */
 const RELATED_CATEGORIES: Record<GrammarCategory, GrammarCategory[]> = {
@@ -211,6 +278,13 @@ export function buildKnowledgeGraph(
         diaryDate: entry.date,
       });
     }
+
+    // correctedTranscriptから文法要素を抽出してノードを生成
+    const targetText = entry.correctedTranscript || entry.transcript;
+    if (targetText) {
+      const grammarNodes = extractGrammarNodes(targetText, entry.id, entry.date);
+      nodes.push(...grammarNodes);
+    }
   }
 
   // お気に入りからノードを生成
@@ -231,19 +305,22 @@ export function buildKnowledgeGraph(
     });
   }
 
+  // 重複ノードを除去（同じIDのノードは1つだけ）
+  const uniqueNodes = Array.from(new Map(nodes.map((n) => [n.id, n])).values());
+
   // エッジを生成（同カテゴリ・関連カテゴリ・同日記のノードを接続）
   const edges: GraphEdge[] = [];
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i + 1; j < nodes.length; j++) {
-      if (shouldConnect(nodes[i], nodes[j])) {
-        edges.push({ source: nodes[i].id, target: nodes[j].id });
+  for (let i = 0; i < uniqueNodes.length; i++) {
+    for (let j = i + 1; j < uniqueNodes.length; j++) {
+      if (shouldConnect(uniqueNodes[i], uniqueNodes[j])) {
+        edges.push({ source: uniqueNodes[i].id, target: uniqueNodes[j].id });
       }
     }
   }
 
   // クラスタリング
   const clusterMap = new Map<GrammarCategory, GraphNode[]>();
-  for (const node of nodes) {
+  for (const node of uniqueNodes) {
     if (!clusterMap.has(node.category)) {
       clusterMap.set(node.category, []);
     }
@@ -263,5 +340,5 @@ export function buildKnowledgeGraph(
   // クラスタサイズ降順でソート
   clusters.sort((a, b) => b.nodes.length - a.nodes.length);
 
-  return { nodes, edges, clusters };
+  return { nodes: uniqueNodes, edges, clusters };
 }
