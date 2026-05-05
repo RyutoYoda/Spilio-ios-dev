@@ -29,7 +29,7 @@ const schemeFromBundleId = `manus${timestamp}`;
 const env = {
   // App branding - update these values directly (do not use env vars)
   appName: "Spilio",
-  appSlug: "english-master",
+  appSlug: "spilio",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
   logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663320438082/hanK7pLMkRJxcePsbhXwik/app-icon-mg6KQdCkfXR6GbtzbRwD5y.png",
@@ -121,6 +121,11 @@ const config: ExpoConfig = {
       },
     ],
   ],
+  extra: {
+    eas: {
+      projectId: "6d49f67f-36d0-4aab-bb1b-e670fbff047a",
+    },
+  },
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
