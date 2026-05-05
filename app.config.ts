@@ -121,6 +121,11 @@ const config: ExpoConfig = {
       },
     ],
   ],
+  extra: {
+    eas: {
+      projectId: "english-master",
+    },
+  },
   experiments: {
     typedRoutes: true,
     reactCompiler: true,
