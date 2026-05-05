@@ -45,18 +45,30 @@ export default function ReviewScreen() {
   if (unreviewedQuestions.length === 0) {
     return (
       <ScreenContainer className="px-5 pt-4">
-        <Text className="text-2xl font-bold text-foreground mb-2">復習</Text>
+        <Text className="text-3xl font-bold text-foreground tracking-tight mb-2">復習</Text>
         <View className="flex-1 items-center justify-center">
-          <IconSymbol name="checkmark.circle.fill" size={64} color={colors.success} />
-          <Text className="text-lg font-semibold text-foreground mt-4 text-center">
+          <View
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: `${colors.success}18`,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 16,
+            }}
+          >
+            <IconSymbol name="checkmark.circle.fill" size={44} color={colors.success} />
+          </View>
+          <Text className="text-lg font-semibold text-foreground text-center">
             {state.entries.length === 0
-              ? "まず日記を録音しよう！"
-              : "復習する問題がありません"}
+              ? "まず日記を録音しよう"
+              : "すべてマスターしました"}
           </Text>
-          <Text className="text-sm text-muted mt-2 text-center">
+          <Text className="text-sm text-muted mt-2 text-center leading-relaxed">
             {state.entries.length === 0
               ? "日記タブからマイクボタンを押して\n英語で今日のことを話してみましょう"
-              : "すべての表現をマスターしました！\n新しい日記を録音すると問題が追加されます"}
+              : "新しい日記を録音すると\n問題が追加されます"}
           </Text>
         </View>
       </ScreenContainer>
@@ -66,19 +78,42 @@ export default function ReviewScreen() {
   return (
     <ScreenContainer className="px-5 pt-4">
       <View className="flex-row items-center justify-between mb-6">
-        <Text className="text-2xl font-bold text-foreground">復習</Text>
-        <Text className="text-sm text-muted">
-          {currentIndex + 1} / {unreviewedQuestions.length}
-        </Text>
+        <Text className="text-3xl font-bold text-foreground tracking-tight">復習</Text>
+        <View
+          style={{
+            backgroundColor: `${colors.primary}15`,
+            borderRadius: 16,
+            paddingHorizontal: 12,
+            paddingVertical: 5,
+          }}
+        >
+          <Text className="text-sm font-medium" style={{ color: colors.primary }}>
+            {currentIndex + 1} / {unreviewedQuestions.length}
+          </Text>
+        </View>
       </View>
 
-      {/* Question Card - Full Sentence */}
-      <View className="bg-surface rounded-2xl p-6 border border-border mb-4">
-        <Text className="text-sm text-muted mb-3">この文の間違いを直すと？</Text>
+      {/* Question Card */}
+      <View
+        className="rounded-2xl p-6 mb-5"
+        style={{
+          backgroundColor: colors.surface,
+          borderWidth: 1,
+          borderColor: colors.border,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 8,
+          elevation: 3,
+        }}
+      >
+        <Text className="text-xs font-medium text-muted uppercase tracking-wider mb-4">
+          この文の間違いを直すと？
+        </Text>
 
-        {/* Show full original sentence with error highlighted */}
+        {/* Full original sentence */}
         {currentQuestion.originalSentence ? (
-          <View className="mb-3">
+          <View className="mb-4">
             <View className="flex-row items-start">
               <Text className="text-base text-foreground leading-relaxed flex-1">
                 {currentQuestion.originalSentence}
@@ -93,10 +128,18 @@ export default function ReviewScreen() {
           </View>
         ) : null}
 
-        {/* Highlight the specific error */}
-        <View className="bg-background rounded-lg p-3 mt-1">
+        {/* Error highlight */}
+        <View
+          style={{
+            backgroundColor: `${colors.error}10`,
+            borderRadius: 10,
+            padding: 12,
+            borderLeftWidth: 3,
+            borderLeftColor: colors.error,
+          }}
+        >
           <Text className="text-xs text-muted mb-1">間違い箇所</Text>
-          <Text className="text-base" style={{ color: colors.error }}>
+          <Text className="text-base font-medium" style={{ color: colors.error }}>
             {currentQuestion.original}
           </Text>
         </View>
@@ -109,10 +152,16 @@ export default function ReviewScreen() {
           style={({ pressed }) => [
             {
               backgroundColor: colors.primary,
-              borderRadius: 12,
+              borderRadius: 14,
               padding: 16,
               alignItems: "center",
-              opacity: pressed ? 0.8 : 1,
+              opacity: pressed ? 0.85 : 1,
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+              shadowColor: colors.primary,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              elevation: 6,
             },
           ]}
         >
@@ -123,10 +172,14 @@ export default function ReviewScreen() {
           {/* Corrected full sentence */}
           {currentQuestion.correctedSentence ? (
             <View
-              className="rounded-2xl p-5 mb-3"
-              style={{ backgroundColor: `${colors.success}15`, borderWidth: 1.5, borderColor: colors.success }}
+              className="rounded-2xl p-5 mb-4"
+              style={{
+                backgroundColor: `${colors.success}08`,
+                borderWidth: 1.5,
+                borderColor: `${colors.success}50`,
+              }}
             >
-              <Text className="text-sm font-medium mb-2" style={{ color: colors.success }}>
+              <Text className="text-xs font-medium uppercase tracking-wider mb-2" style={{ color: colors.success }}>
                 正しい全文
               </Text>
               <View className="flex-row items-start">
@@ -143,23 +196,26 @@ export default function ReviewScreen() {
             </View>
           ) : null}
 
-          {/* Specific correction point */}
-          <View className="bg-surface rounded-xl p-4 border border-border mb-4">
-            <Text className="text-xs text-muted mb-2">修正ポイント</Text>
-            <View className="flex-row items-center mb-1">
+          {/* Correction detail */}
+          <View
+            className="rounded-xl p-4 mb-5"
+            style={{ backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border }}
+          >
+            <Text className="text-xs text-muted mb-3 uppercase tracking-wider">修正ポイント</Text>
+            <View className="flex-row items-center mb-2">
               <IconSymbol name="xmark.circle.fill" size={14} color={colors.error} />
               <Text className="text-sm ml-2" style={{ color: colors.error, textDecorationLine: "line-through" }}>
                 {currentQuestion.original}
               </Text>
             </View>
-            <View className="flex-row items-center mb-2">
+            <View className="flex-row items-center mb-3">
               <IconSymbol name="checkmark.circle.fill" size={14} color={colors.success} />
               <Text className="text-sm ml-2" style={{ color: colors.success }}>
                 {currentQuestion.correct}
               </Text>
             </View>
             {currentQuestion.explanation ? (
-              <Text className="text-sm text-muted">{currentQuestion.explanation}</Text>
+              <Text className="text-sm text-muted leading-relaxed">{currentQuestion.explanation}</Text>
             ) : null}
           </View>
 
@@ -171,10 +227,11 @@ export default function ReviewScreen() {
                 {
                   flex: 1,
                   backgroundColor: colors.success,
-                  borderRadius: 12,
-                  padding: 14,
+                  borderRadius: 14,
+                  padding: 15,
                   alignItems: "center",
-                  opacity: pressed ? 0.8 : 1,
+                  opacity: pressed ? 0.85 : 1,
+                  transform: [{ scale: pressed ? 0.98 : 1 }],
                 },
               ]}
             >
@@ -186,12 +243,13 @@ export default function ReviewScreen() {
                 {
                   flex: 1,
                   backgroundColor: colors.surface,
-                  borderRadius: 12,
-                  padding: 14,
+                  borderRadius: 14,
+                  padding: 15,
                   alignItems: "center",
                   borderWidth: 1,
                   borderColor: colors.border,
-                  opacity: pressed ? 0.8 : 1,
+                  opacity: pressed ? 0.85 : 1,
+                  transform: [{ scale: pressed ? 0.98 : 1 }],
                 },
               ]}
             >

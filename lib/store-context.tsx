@@ -51,6 +51,7 @@ export interface AppState {
 
 type AppAction =
   | { type: "ADD_ENTRY"; entry: DiaryEntry }
+  | { type: "DELETE_ENTRY"; id: string }
   | { type: "ADD_FAVORITE"; favorite: FavoriteExpression }
   | { type: "REMOVE_FAVORITE"; id: string }
   | { type: "ADD_REVIEW_QUESTIONS"; questions: ReviewQuestion[] }
@@ -71,6 +72,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case "ADD_ENTRY":
       return { ...state, entries: [action.entry, ...state.entries] };
+    case "DELETE_ENTRY":
+      return {
+        ...state,
+        entries: state.entries.filter((e) => e.id !== action.id),
+        reviewQuestions: state.reviewQuestions.filter((q) => q.diaryId !== action.id),
+      };
     case "ADD_FAVORITE":
       return { ...state, favorites: [action.favorite, ...state.favorites] };
     case "REMOVE_FAVORITE":
@@ -108,6 +115,7 @@ const STORAGE_KEY = "@english_rehearsal_store";
 interface StoreContextType {
   state: AppState;
   addEntry: (entry: DiaryEntry) => void;
+  deleteEntry: (id: string) => void;
   addFavorite: (favorite: FavoriteExpression) => void;
   removeFavorite: (id: string) => void;
   addReviewQuestions: (questions: ReviewQuestion[]) => void;
@@ -148,6 +156,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "UPDATE_STREAK" });
   }, []);
 
+  const deleteEntry = useCallback((id: string) => {
+    dispatch({ type: "DELETE_ENTRY", id });
+  }, []);
+
   const addFavorite = useCallback((favorite: FavoriteExpression) => {
     dispatch({ type: "ADD_FAVORITE", favorite });
   }, []);
@@ -170,7 +182,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <StoreContext.Provider
-      value={{ state, addEntry, addFavorite, removeFavorite, addReviewQuestions, markMastered, updateStreak }}
+      value={{ state, addEntry, deleteEntry, addFavorite, removeFavorite, addReviewQuestions, markMastered, updateStreak }}
     >
       {children}
     </StoreContext.Provider>

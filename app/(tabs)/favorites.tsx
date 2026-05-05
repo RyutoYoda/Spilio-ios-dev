@@ -16,7 +16,7 @@ export default function FavoritesScreen() {
   const handleDelete = (id: string, text: string) => {
     Alert.alert(
       "削除確認",
-      `「${text}」をお気に入りから削除しますか？`,
+      `この表現をお気に入りから削除しますか？`,
       [
         { text: "キャンセル", style: "cancel" },
         { text: "削除", style: "destructive", onPress: () => removeFavorite(id) },
@@ -26,16 +26,30 @@ export default function FavoritesScreen() {
 
   return (
     <ScreenContainer className="px-5 pt-4">
-      <Text className="text-2xl font-bold text-foreground mb-2">My Favorites</Text>
-      <Text className="text-sm text-muted mb-6">お気に入りの表現コレクション</Text>
+      <View className="mb-6">
+        <Text className="text-3xl font-bold text-foreground tracking-tight">My Favorites</Text>
+        <Text className="text-sm text-muted mt-1">お気に入りの表現コレクション</Text>
+      </View>
 
       {state.favorites.length === 0 ? (
         <View className="flex-1 items-center justify-center">
-          <IconSymbol name="heart.fill" size={64} color={colors.border} />
-          <Text className="text-lg font-semibold text-muted mt-4 text-center">
+          <View
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: `${colors.primary}12`,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 16,
+            }}
+          >
+            <IconSymbol name="heart.fill" size={36} color={colors.border} />
+          </View>
+          <Text className="text-lg font-semibold text-muted text-center">
             まだお気に入りがありません
           </Text>
-          <Text className="text-sm text-muted mt-2 text-center">
+          <Text className="text-sm text-muted mt-2 text-center leading-relaxed">
             日記の結果画面から{"\n"}気に入った表現を保存できます
           </Text>
         </View>
@@ -44,28 +58,33 @@ export default function FavoritesScreen() {
           data={state.favorites}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 20 }}
           renderItem={({ item }) => (
             <View
-              className="bg-surface rounded-xl p-4 mb-3 border border-border"
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 16,
+                padding: 16,
+                marginBottom: 12,
+                borderWidth: 1,
+                borderColor: colors.border,
+              }}
             >
               <View className="flex-row items-start justify-between">
                 <View className="flex-1 mr-3">
-                  <Text className="text-base font-medium text-foreground mb-1">
+                  <Text className="text-base font-medium text-foreground leading-relaxed mb-1">
                     {item.english}
                   </Text>
-                  <Text className="text-sm text-muted">{item.japanese}</Text>
-                  {item.note ? (
-                    <Text className="text-xs text-muted mt-1 italic">{item.note}</Text>
-                  ) : null}
+                  <Text className="text-sm text-muted leading-relaxed">{item.japanese}</Text>
                 </View>
-                <View className="flex-row items-center gap-1">
+                <View className="flex-row items-center">
                   <Pressable
                     onPress={() => speakText(item.english)}
                     style={({ pressed }) => [
                       {
-                        padding: 8,
-                        borderRadius: 8,
-                        backgroundColor: `${colors.primary}15`,
+                        padding: 10,
+                        borderRadius: 10,
+                        backgroundColor: `${colors.primary}12`,
                         opacity: pressed ? 0.6 : 1,
                       },
                     ]}
@@ -76,13 +95,14 @@ export default function FavoritesScreen() {
                     onPress={() => handleDelete(item.id, item.english)}
                     style={({ pressed }) => [
                       {
-                        padding: 8,
-                        borderRadius: 8,
+                        padding: 10,
+                        borderRadius: 10,
+                        marginLeft: 6,
                         opacity: pressed ? 0.6 : 1,
                       },
                     ]}
                   >
-                    <IconSymbol name="trash.fill" size={18} color={colors.error} />
+                    <IconSymbol name="trash.fill" size={16} color={colors.muted} />
                   </Pressable>
                 </View>
               </View>

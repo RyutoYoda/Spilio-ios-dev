@@ -4,13 +4,11 @@ import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { useStore } from "@/lib/store-context";
-import { useState } from "react";
 
 export default function DiaryScreen() {
   const colors = useColors();
   const router = useRouter();
   const { state } = useStore();
-  const [isRecording, setIsRecording] = useState(false);
 
   const handleRecord = () => {
     router.push("/record");
@@ -25,84 +23,127 @@ export default function DiaryScreen() {
     return `${month}/${day} (${weekday})`;
   };
 
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return colors.success;
+    if (score >= 60) return "#F59E0B";
+    return colors.error;
+  };
+
   return (
     <ScreenContainer className="px-5 pt-4">
-      {/* Header with streak */}
-      <View className="flex-row items-center justify-between mb-6">
+      {/* Header */}
+      <View className="flex-row items-center justify-between mb-8">
         <View>
-          <Text className="text-2xl font-bold text-foreground">Spilio</Text>
-          <Text className="text-sm text-muted mt-1">今日のことを英語で話そう</Text>
+          <Text className="text-3xl font-bold text-foreground tracking-tight">Spilio</Text>
+          <Text className="text-sm text-muted mt-0.5">今日のことを英語で話そう</Text>
         </View>
-        <View className="flex-row items-center bg-surface px-3 py-2 rounded-full border border-border">
-          <IconSymbol name="flame.fill" size={18} color="#F59E0B" />
-          <Text className="text-base font-bold text-foreground ml-1">{state.streak}</Text>
-          <Text className="text-xs text-muted ml-1">日</Text>
-        </View>
+        {state.streak > 0 && (
+          <View
+            style={{
+              backgroundColor: `${colors.warning}18`,
+              borderRadius: 20,
+              paddingHorizontal: 14,
+              paddingVertical: 8,
+              flexDirection: "row",
+              alignItems: "center",
+              borderWidth: 1,
+              borderColor: `${colors.warning}40`,
+            }}
+          >
+            <IconSymbol name="flame.fill" size={16} color={colors.warning} />
+            <Text
+              className="text-sm font-bold ml-1.5"
+              style={{ color: colors.warning }}
+            >
+              {state.streak}日連続
+            </Text>
+          </View>
+        )}
       </View>
 
-      {/* Record Button */}
-      <View className="items-center mb-8">
+      {/* Record Button - Hero Area */}
+      <View className="items-center mb-10">
         <Pressable
           onPress={handleRecord}
           style={({ pressed }) => [
             {
-              width: 120,
-              height: 120,
-              borderRadius: 60,
+              width: 130,
+              height: 130,
+              borderRadius: 65,
               backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
-              opacity: pressed ? 0.8 : 1,
-              transform: [{ scale: pressed ? 0.95 : 1 }],
+              opacity: pressed ? 0.85 : 1,
+              transform: [{ scale: pressed ? 0.96 : 1 }],
               shadowColor: colors.primary,
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.35,
+              shadowRadius: 16,
+              elevation: 12,
             },
           ]}
         >
-          <IconSymbol name="mic.fill" size={48} color="#FFFFFF" />
+          <IconSymbol name="mic.fill" size={52} color="#FFFFFF" />
         </Pressable>
-        <Text className="text-sm text-muted mt-3">タップして録音開始</Text>
+        <Text className="text-sm text-muted mt-4 tracking-wide">タップして録音開始</Text>
       </View>
 
       {/* Past entries */}
       <View className="flex-1">
-        <Text className="text-lg font-semibold text-foreground mb-3">過去の日記</Text>
+        <View className="flex-row items-center justify-between mb-4">
+          <Text className="text-lg font-semibold text-foreground">過去の日記</Text>
+          {state.entries.length > 0 && (
+            <Text className="text-xs text-muted">{state.entries.length}件</Text>
+          )}
+        </View>
         {state.entries.length === 0 ? (
-          <View className="items-center py-8">
-            <Text className="text-muted text-center">まだ日記がありません{"\n"}マイクボタンを押して始めましょう</Text>
+          <View className="items-center py-12">
+            <IconSymbol name="mic.fill" size={36} color={colors.border} />
+            <Text className="text-muted text-center mt-4 leading-relaxed">
+              まだ日記がありません{"\n"}マイクボタンを押して始めましょう
+            </Text>
           </View>
         ) : (
           <FlatList
             data={state.entries}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 20 }}
             renderItem={({ item }) => (
               <Pressable
                 onPress={() => router.push(`/entry/${item.id}` as any)}
                 style={({ pressed }) => [
                   {
                     backgroundColor: colors.surface,
-                    borderRadius: 12,
+                    borderRadius: 16,
                     padding: 16,
-                    marginBottom: 10,
+                    marginBottom: 12,
                     borderWidth: 1,
                     borderColor: colors.border,
                     opacity: pressed ? 0.7 : 1,
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
                   },
                 ]}
               >
                 <View className="flex-row items-center justify-between mb-2">
-                  <Text className="text-sm font-medium text-muted">{formatDate(item.date)}</Text>
-                  <View className="flex-row items-center">
-                    <Text className="text-sm font-bold" style={{ color: colors.primary }}>
-                      {item.overallScore}点
+                  <Text className="text-sm text-muted">{formatDate(item.date)}</Text>
+                  <View
+                    style={{
+                      backgroundColor: `${getScoreColor(item.overallScore)}18`,
+                      borderRadius: 12,
+                      paddingHorizontal: 10,
+                      paddingVertical: 3,
+                    }}
+                  >
+                    <Text
+                      className="text-sm font-bold"
+                      style={{ color: getScoreColor(item.overallScore) }}
+                    >
+                      {item.overallScore}
                     </Text>
                   </View>
                 </View>
-                <Text className="text-foreground" numberOfLines={2}>
+                <Text className="text-foreground leading-relaxed" numberOfLines={2}>
                   {item.transcript}
                 </Text>
               </Pressable>

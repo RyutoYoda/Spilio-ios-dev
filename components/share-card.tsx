@@ -63,8 +63,7 @@ export const ShareCard = forwardRef<View, ShareCardProps>(
             <Text style={{ fontSize: 14, color: "#9BA1A6" }}>{formatDate(date)}</Text>
             {streak > 0 && (
               <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 12 }}>
-                <Text style={{ fontSize: 14 }}>🔥</Text>
-                <Text style={{ fontSize: 14, color: "#F59E0B", fontWeight: "600", marginLeft: 2 }}>{streak}日</Text>
+                <Text style={{ fontSize: 14, color: "#F59E0B", fontWeight: "600" }}>{streak}日連続</Text>
               </View>
             )}
           </View>
@@ -124,7 +123,7 @@ export const ShareCard = forwardRef<View, ShareCardProps>(
         {/* Footer */}
         <View style={{ alignItems: "center" }}>
           <Text style={{ fontSize: 11, color: "#687076" }}>
-            英語で今日を語ろう 🎙️
+            英語で今日を語ろう - Spilio
           </Text>
         </View>
       </View>
