@@ -30,7 +30,7 @@ export default function DiaryScreen() {
       {/* Header with streak */}
       <View className="flex-row items-center justify-between mb-6">
         <View>
-          <Text className="text-2xl font-bold text-foreground">English Diary</Text>
+          <Text className="text-2xl font-bold text-foreground">Spilio</Text>
           <Text className="text-sm text-muted mt-1">今日のことを英語で話そう</Text>
         </View>
         <View className="flex-row items-center bg-surface px-3 py-2 rounded-full border border-border">

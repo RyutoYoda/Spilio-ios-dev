@@ -1,10 +1,13 @@
 import { Text, View, ScrollView, Pressable, TextInput, Alert, Linking } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { useStore } from "@/lib/store-context";
+import { ShareCard } from "@/components/share-card";
+import { shareToInstagramStory } from "@/lib/share-utils";
+import ViewShot from "react-native-view-shot";
 import * as Speech from "expo-speech";
 
 export default function ResultScreen() {
@@ -13,6 +16,7 @@ export default function ResultScreen() {
   const { entryId } = useLocalSearchParams<{ entryId: string }>();
   const { state, addFavorite } = useStore();
   const [favoriteNote, setFavoriteNote] = useState("");
+  const viewShotRef = useRef<any>(null);
 
   const entry = useMemo(
     () => state.entries.find((e) => e.id === entryId),
@@ -194,25 +198,64 @@ export default function ResultScreen() {
           </View>
         )}
 
-        {/* Share to X button */}
-        <Pressable
-          onPress={handleShareToX}
-          style={({ pressed }) => [
-            {
-              backgroundColor: "#000000",
-              borderRadius: 12,
-              padding: 16,
-              alignItems: "center",
-              marginTop: 8,
-              flexDirection: "row",
-              justifyContent: "center",
-              opacity: pressed ? 0.8 : 1,
-            },
-          ]}
-        >
-          <Text className="text-white font-bold text-base mr-2">𝕏</Text>
-          <Text className="text-white font-semibold text-base">ポストする</Text>
-        </Pressable>
+        {/* Share Card (hidden, for capture) */}
+        <View style={{ position: "absolute", left: -9999, top: 0 }}>
+          <ViewShot ref={viewShotRef} options={{ format: "png", quality: 1 }}>
+            <ShareCard
+              transcript={entry.transcript}
+              correctedTranscript={entry.correctedTranscript}
+              overallScore={entry.overallScore}
+              grammarScore={entry.grammarScore}
+              pronunciationScore={entry.pronunciationScore}
+              fluencyScore={entry.fluencyScore}
+              streak={state.streak}
+              date={entry.date}
+            />
+          </ViewShot>
+        </View>
+
+        {/* Share buttons row */}
+        <View className="flex-row gap-3" style={{ marginTop: 8 }}>
+          {/* Share to X */}
+          <Pressable
+            onPress={handleShareToX}
+            style={({ pressed }) => [
+              {
+                flex: 1,
+                backgroundColor: "#000000",
+                borderRadius: 12,
+                padding: 14,
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                opacity: pressed ? 0.8 : 1,
+              },
+            ]}
+          >
+            <Text className="text-white font-bold text-base mr-1">𝕏</Text>
+            <Text className="text-white font-semibold text-sm">ポスト</Text>
+          </Pressable>
+
+          {/* Share to Instagram Story */}
+          <Pressable
+            onPress={() => shareToInstagramStory(viewShotRef)}
+            style={({ pressed }) => [
+              {
+                flex: 1,
+                borderRadius: 12,
+                padding: 14,
+                alignItems: "center",
+                flexDirection: "row",
+                justifyContent: "center",
+                opacity: pressed ? 0.8 : 1,
+                backgroundColor: "#E1306C",
+              },
+            ]}
+          >
+            <Text className="text-white font-bold text-base mr-1">📷</Text>
+            <Text className="text-white font-semibold text-sm">ストーリー</Text>
+          </Pressable>
+        </View>
 
         {/* Done button */}
         <Pressable
