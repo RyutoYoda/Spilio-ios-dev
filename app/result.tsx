@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Pressable, TextInput, Alert } from "react-native";
+import { Text, View, ScrollView, Pressable, TextInput, Alert, Linking } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
@@ -45,6 +45,13 @@ export default function ResultScreen() {
     if (score >= 80) return colors.success;
     if (score >= 60) return "#F59E0B";
     return colors.error;
+  };
+
+  const handleShareToX = () => {
+    const text = `${entry.transcript}\n\n📊 Score: ${entry.overallScore}/100\n#Spilio #EnglishDiary`;
+    const encodedText = encodeURIComponent(text);
+    const url = `https://twitter.com/intent/tweet?text=${encodedText}`;
+    Linking.openURL(url);
   };
 
   return (
@@ -169,6 +176,26 @@ export default function ResultScreen() {
           </View>
         )}
 
+        {/* Share to X button */}
+        <Pressable
+          onPress={handleShareToX}
+          style={({ pressed }) => [
+            {
+              backgroundColor: "#000000",
+              borderRadius: 12,
+              padding: 16,
+              alignItems: "center",
+              marginTop: 8,
+              flexDirection: "row",
+              justifyContent: "center",
+              opacity: pressed ? 0.8 : 1,
+            },
+          ]}
+        >
+          <Text className="text-white font-bold text-base mr-2">𝕏</Text>
+          <Text className="text-white font-semibold text-base">ポストする</Text>
+        </Pressable>
+
         {/* Done button */}
         <Pressable
           onPress={() => router.replace("/(tabs)")}
@@ -178,7 +205,7 @@ export default function ResultScreen() {
               borderRadius: 12,
               padding: 16,
               alignItems: "center",
-              marginTop: 8,
+              marginTop: 12,
               opacity: pressed ? 0.8 : 1,
             },
           ]}

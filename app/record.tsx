@@ -6,6 +6,7 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useColors } from "@/hooks/use-colors";
 import { useStore } from "@/lib/store-context";
 import { trpc } from "@/lib/trpc";
+import { getApiBaseUrl } from "@/constants/oauth";
 import {
   useAudioRecorder,
   useAudioRecorderState,
@@ -220,12 +221,4 @@ export default function RecordScreen() {
       </View>
     </ScreenContainer>
   );
-}
-
-function getApiBaseUrl() {
-  if (Platform.OS === "web") {
-    return window.location.origin;
-  }
-  // For native, use the server URL
-  return "http://localhost:3000";
 }
