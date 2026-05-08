@@ -43,11 +43,9 @@
     "expo-image": "~3.0.11",
     "expo-keep-awake": "~15.0.8",
     "expo-linking": "~8.0.10",
-    "expo-media-library": "^55.0.15",
     "expo-notifications": "~0.32.15",
     "expo-router": "~6.0.19",
     "expo-secure-store": "~15.0.8",
-    "expo-sharing": "^55.0.18",
     "expo-speech": "^55.0.13",
     "expo-splash-screen": "~31.0.12",
     "expo-status-bar": "~3.0.9",
@@ -94,10 +92,5 @@
     "typescript": "~5.9.3",
     "vitest": "^2.1.9"
   },
-  "packageManager": "pnpm@9.12.0",
-  "pnpm": {
-    "patchedDependencies": {
-      "expo-modules-core@3.0.29": "patches/expo-modules-core@3.0.29.patch"
-    }
-  }
+  "packageManager": "pnpm@9.12.0"
 }

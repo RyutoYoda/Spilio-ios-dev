@@ -79,4 +79,4 @@
 - [x] GitHubにプッシュ
 
 ## EAS Build修正（v17）
-- [x] FileSystemUtilities.isReadableFileエラー修正（expo-modules-coreにpnpmパッチ適用）
+- [x] FileSystemUtilities.isReadableFileエラー修正（expo-sharingとexpo-media-libraryを削除、React Native Share APIに置換）
