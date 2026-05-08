@@ -77,3 +77,6 @@
 ## 改善要件（v12）
 - [x] ナレッジグラフに検索欄を追加（単語検索でノードをフィルタリング）
 - [x] GitHubにプッシュ
+
+## EAS Build修正（v17）
+- [x] FileSystemUtilities.isReadableFileエラー修正（expo-modules-coreにpnpmパッチ適用）
