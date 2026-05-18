@@ -1,4 +1,4 @@
-import { Text, View, FlatList, Pressable, StyleSheet } from "react-native";
+import { Text, View, FlatList, Pressable, StyleSheet, Dimensions } from "react-native";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
@@ -7,6 +7,8 @@ import { useColors } from "@/hooks/use-colors";
 import { useStore } from "@/lib/store-context";
 import { CalendarModal } from "@/components/calendar-modal";
 import { Image } from "expo-image";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export default function DiaryScreen() {
   const colors = useColors();
@@ -44,11 +46,7 @@ export default function DiaryScreen() {
             source={require("@/assets/images/icon.png")}
             style={styles.headerLogo}
           />
-          <View>
-            <Text
-              style={[styles.headerTitle, { color: colors.foreground }]}
-            >Spilio</Text>
-          </View>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Spilio</Text>
         </View>
         <Pressable
           onPress={() => setCalendarVisible(true)}
@@ -62,133 +60,80 @@ export default function DiaryScreen() {
           ]}
         >
           <IconSymbol name="flame.fill" size={15} color={state.streak > 0 ? colors.warning : colors.muted} />
-          <Text
-            style={[styles.streakText, { color: state.streak > 0 ? colors.warning : colors.muted }]}
-          >
+          <Text style={[styles.streakText, { color: state.streak > 0 ? colors.warning : colors.muted }]}>
             {state.streak > 0 ? `${state.streak}` : "0"}
           </Text>
         </Pressable>
       </View>
 
-      {/* Welcome Section for new users */}
-      {!hasEntries ? (
-        <View style={styles.welcomeContainer}>
-          {/* Gradient-like hero card */}
-          <View
-            style={[styles.heroCard, { backgroundColor: colors.primary }]}
-          >
-            <View style={styles.heroCardInner}>
-              <View style={styles.heroIconRow}>
-                <View style={styles.heroIconCircle}>
-                  <IconSymbol name="mic.fill" size={28} color={colors.primary} />
-                </View>
-              </View>
-              <Text style={styles.heroTitle}>
-                英語で今日を{"\n"}振り返ろう
-              </Text>
-              <Text style={styles.heroSubtitle}>
-                声で日記を録音するだけ。AIが文法と発音を分析して、あなたの英語力を伸ばします。
-              </Text>
-              <Pressable
-                onPress={handleRecord}
-                style={({ pressed }) => [
-                  styles.heroButton,
-                  {
-                    opacity: pressed ? 0.9 : 1,
-                    transform: [{ scale: pressed ? 0.97 : 1 }],
-                  },
-                ]}
-              >
-                <Text style={[styles.heroButtonText, { color: colors.primary }]}>録音を始める</Text>
-                <IconSymbol name="chevron.right" size={18} color={colors.primary} />
-              </Pressable>
-            </View>
-            {/* Decorative circles */}
-            <View style={[styles.decorCircle1, { backgroundColor: "rgba(255,255,255,0.08)" }]} />
-            <View style={[styles.decorCircle2, { backgroundColor: "rgba(255,255,255,0.05)" }]} />
+      {/* Large Record Button - Hero Area */}
+      <Pressable
+        onPress={handleRecord}
+        style={({ pressed }) => [
+          styles.recordHero,
+          {
+            backgroundColor: colors.primary,
+            shadowColor: colors.primary,
+            opacity: pressed ? 0.92 : 1,
+            transform: [{ scale: pressed ? 0.97 : 1 }],
+          },
+        ]}
+      >
+        {/* Decorative circles */}
+        <View style={[styles.heroDecor1, { backgroundColor: "rgba(255,255,255,0.08)" }]} />
+        <View style={[styles.heroDecor2, { backgroundColor: "rgba(255,255,255,0.05)" }]} />
+        <View style={[styles.heroDecor3, { backgroundColor: "rgba(255,255,255,0.04)" }]} />
+
+        <View style={styles.recordHeroInner}>
+          {/* Large mic icon */}
+          <View style={styles.micCircle}>
+            <IconSymbol name="mic.fill" size={36} color={colors.primary} />
           </View>
 
-          {/* Feature hints */}
-          <View style={styles.featureGrid}>
-            <View style={[styles.featureCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.featureIcon, { backgroundColor: `${colors.success}15` }]}>
-                <IconSymbol name="checkmark.circle.fill" size={20} color={colors.success} />
-              </View>
-              <Text style={[styles.featureTitle, { color: colors.foreground }]}>文法チェック</Text>
-              <Text style={[styles.featureDesc, { color: colors.muted }]}>AIが間違いを指摘</Text>
+          <Text style={styles.recordHeroTitle}>
+            {hasEntries ? "今日も英語で話そう" : "英語で今日を振り返ろう"}
+          </Text>
+          <Text style={styles.recordHeroSub}>
+            タップして録音を開始
+          </Text>
+        </View>
+      </Pressable>
+
+      {!hasEntries ? (
+        /* Empty state - feature hints */
+        <View style={styles.featureSection}>
+          <Text style={[styles.sectionLabel, { color: colors.muted }]}>Spilioでできること</Text>
+          <View style={styles.featureRow}>
+            <View style={[styles.featureChip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <IconSymbol name="checkmark.circle.fill" size={16} color={colors.success} />
+              <Text style={[styles.featureChipText, { color: colors.foreground }]}>文法チェック</Text>
             </View>
-            <View style={[styles.featureCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.featureIcon, { backgroundColor: `${colors.secondary}15` }]}>
-                <IconSymbol name="speaker.wave.2.fill" size={20} color={colors.secondary} />
-              </View>
-              <Text style={[styles.featureTitle, { color: colors.foreground }]}>発音スコア</Text>
-              <Text style={[styles.featureDesc, { color: colors.muted }]}>発音を数値で評価</Text>
+            <View style={[styles.featureChip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <IconSymbol name="speaker.wave.2.fill" size={16} color={colors.primary} />
+              <Text style={[styles.featureChipText, { color: colors.foreground }]}>発音スコア</Text>
             </View>
-            <View style={[styles.featureCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.featureIcon, { backgroundColor: `${colors.warning}15` }]}>
-                <IconSymbol name="arrow.clockwise" size={20} color={colors.warning} />
-              </View>
-              <Text style={[styles.featureTitle, { color: colors.foreground }]}>復習クイズ</Text>
-              <Text style={[styles.featureDesc, { color: colors.muted }]}>穴埋めで定着</Text>
+            <View style={[styles.featureChip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <IconSymbol name="arrow.clockwise" size={16} color={colors.warning} />
+              <Text style={[styles.featureChipText, { color: colors.foreground }]}>復習クイズ</Text>
             </View>
-            <View style={[styles.featureCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.featureIcon, { backgroundColor: `${colors.primary}15` }]}>
-                <IconSymbol name="flame.fill" size={20} color={colors.primary} />
-              </View>
-              <Text style={[styles.featureTitle, { color: colors.foreground }]}>継続記録</Text>
-              <Text style={[styles.featureDesc, { color: colors.muted }]}>毎日の学習を可視化</Text>
+            <View style={[styles.featureChip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <IconSymbol name="flame.fill" size={16} color={colors.error} />
+              <Text style={[styles.featureChipText, { color: colors.foreground }]}>継続記録</Text>
             </View>
           </View>
         </View>
       ) : (
         <>
-          {/* Quick Actions */}
-          <View style={styles.actionRow}>
-            <Pressable
-              onPress={handleRecord}
-              style={({ pressed }) => [
-                styles.primaryAction,
-                {
-                  backgroundColor: colors.primary,
-                  opacity: pressed ? 0.85 : 1,
-                  transform: [{ scale: pressed ? 0.97 : 1 }],
-                  shadowColor: colors.primary,
-                },
-              ]}
-            >
-              <IconSymbol name="mic.fill" size={20} color="#FFFFFF" />
-              <Text style={styles.primaryActionText}>録音する</Text>
-            </Pressable>
-
-            <Pressable
-              onPress={() => router.push("/knowledge-graph" as any)}
-              style={({ pressed }) => [
-                styles.secondaryAction,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: colors.border,
-                  opacity: pressed ? 0.7 : 1,
-                  transform: [{ scale: pressed ? 0.98 : 1 }],
-                },
-              ]}
-            >
-              <IconSymbol name="arrow.clockwise" size={17} color={colors.primary} />
-              <Text style={[styles.secondaryActionText, { color: colors.foreground }]}>グラフ</Text>
-            </Pressable>
-          </View>
-
-          {/* Stats Summary */}
-          <View
-            style={[styles.statsRow, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          >
+          {/* Stats row */}
+          <View style={[styles.statsRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <View style={styles.statItem}>
               <Text style={[styles.statValue, { color: colors.foreground }]}>{state.entries.length}</Text>
-              <Text style={[styles.statLabel, { color: colors.muted }]}>日記数</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>日記</Text>
             </View>
             <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
             <View style={styles.statItem}>
               <Text style={[styles.statValue, { color: colors.foreground }]}>{state.totalDays}</Text>
-              <Text style={[styles.statLabel, { color: colors.muted }]}>学習日数</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>日数</Text>
             </View>
             <View style={[styles.statDivider, { backgroundColor: colors.border }]} />
             <View style={styles.statItem}>
@@ -197,8 +142,26 @@ export default function DiaryScreen() {
                   ? Math.round(state.entries.reduce((sum, e) => sum + e.overallScore, 0) / state.entries.length)
                   : 0}
               </Text>
-              <Text style={[styles.statLabel, { color: colors.muted }]}>平均スコア</Text>
+              <Text style={[styles.statLabel, { color: colors.muted }]}>平均点</Text>
             </View>
+          </View>
+
+          {/* Quick links */}
+          <View style={styles.quickLinks}>
+            <Pressable
+              onPress={() => router.push("/knowledge-graph" as any)}
+              style={({ pressed }) => [
+                styles.quickLink,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+            >
+              <IconSymbol name="arrow.clockwise" size={16} color={colors.primary} />
+              <Text style={[styles.quickLinkText, { color: colors.foreground }]}>ナレッジグラフ</Text>
+            </Pressable>
           </View>
 
           {/* Past entries */}
@@ -227,17 +190,16 @@ export default function DiaryScreen() {
                 >
                   <View style={styles.entryHeader}>
                     <Text style={[styles.entryDate, { color: colors.muted }]}>{formatDate(item.date)}</Text>
-                    <View
-                      style={[styles.scoreBadge, { backgroundColor: `${getScoreColor(item.overallScore)}15` }]}
-                    >
-                      <Text
-                        style={[styles.scoreText, { color: getScoreColor(item.overallScore) }]}
-                      >
+                    <View style={[styles.scoreBadge, { backgroundColor: `${getScoreColor(item.overallScore)}15` }]}>
+                      <Text style={[styles.scoreText, { color: getScoreColor(item.overallScore) }]}>
                         {item.overallScore}
                       </Text>
                     </View>
                   </View>
-                  <Text style={[styles.entryTranscript, { color: colors.foreground }]} numberOfLines={2}>
+                  <Text
+                    style={[styles.entryTranscript, { color: colors.foreground }]}
+                    numberOfLines={2}
+                  >
                     {item.transcript}
                   </Text>
                 </Pressable>
@@ -260,7 +222,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 20,
+    marginBottom: 16,
   },
   headerLeft: {
     flexDirection: "row",
@@ -268,8 +230,8 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   headerLogo: {
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     borderRadius: 10,
   },
   headerTitle: {
@@ -291,167 +253,152 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  // Welcome (empty state)
-  welcomeContainer: {
-    flex: 1,
-  },
-  heroCard: {
-    borderRadius: 24,
+  // Record Hero Button
+  recordHero: {
+    borderRadius: 28,
     overflow: "hidden",
     marginBottom: 20,
+    minHeight: 200,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
-  heroCardInner: {
-    padding: 28,
+  recordHeroInner: {
+    padding: 32,
+    alignItems: "center",
+    justifyContent: "center",
     zIndex: 1,
   },
-  heroIconRow: {
-    marginBottom: 20,
-  },
-  heroIconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
+  micCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: "rgba(255,255,255,0.95)",
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  heroTitle: {
-    fontSize: 26,
+  recordHeroTitle: {
+    fontSize: 22,
     fontWeight: "800",
     color: "#FFFFFF",
-    lineHeight: 36,
-    letterSpacing: -0.5,
-    marginBottom: 10,
+    textAlign: "center",
+    letterSpacing: -0.3,
+    marginBottom: 8,
   },
-  heroSubtitle: {
+  recordHeroSub: {
     fontSize: 14,
-    color: "rgba(255,255,255,0.8)",
-    lineHeight: 22,
-    marginBottom: 24,
+    color: "rgba(255,255,255,0.75)",
+    fontWeight: "500",
   },
-  heroButton: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 14,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    alignSelf: "flex-start",
-    gap: 6,
-  },
-  heroButtonText: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  decorCircle1: {
+  heroDecor1: {
     position: "absolute",
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    top: -60,
-    right: -40,
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    top: -80,
+    right: -50,
   },
-  decorCircle2: {
+  heroDecor2: {
     position: "absolute",
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    bottom: -30,
-    right: 40,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    bottom: -40,
+    left: -30,
+  },
+  heroDecor3: {
+    position: "absolute",
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    top: 20,
+    left: SCREEN_WIDTH * 0.5,
   },
 
-  featureGrid: {
+  // Feature hints (empty state)
+  featureSection: {
+    marginTop: 8,
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: "600",
+    marginBottom: 12,
+    letterSpacing: 0.3,
+  },
+  featureRow: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    gap: 10,
   },
-  featureCard: {
-    width: "47%",
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-  },
-  featureIcon: {
-    width: 40,
-    height: 40,
+  featureChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
     borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  featureTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    marginBottom: 2,
-  },
-  featureDesc: {
-    fontSize: 12,
-    lineHeight: 16,
-  },
-
-  // Has entries state
-  actionRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 16,
-  },
-  primaryAction: {
-    flex: 1,
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  primaryActionText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  secondaryAction: {
-    flex: 1,
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
     borderWidth: 1,
-    gap: 8,
   },
-  secondaryActionText: {
-    fontSize: 14,
+  featureChipText: {
+    fontSize: 13,
     fontWeight: "600",
   },
 
+  // Stats
   statsRow: {
     flexDirection: "row",
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    marginBottom: 20,
+    marginBottom: 14,
   },
   statItem: {
     flex: 1,
     alignItems: "center",
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "800",
+    marginBottom: 2,
   },
   statLabel: {
     fontSize: 11,
-    marginTop: 2,
+    fontWeight: "500",
   },
   statDivider: {
     width: 1,
+    height: "80%",
+    alignSelf: "center",
   },
 
+  // Quick links
+  quickLinks: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+  },
+  quickLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  quickLinkText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  // Entries
   entriesSection: {
     flex: 1,
   },
@@ -459,33 +406,35 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 14,
+    marginBottom: 10,
   },
   entriesTitle: {
     fontSize: 17,
     fontWeight: "700",
   },
   entriesCount: {
-    fontSize: 12,
+    fontSize: 13,
+    fontWeight: "500",
   },
   entryCard: {
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 10,
+    borderRadius: 14,
+    padding: 14,
     borderWidth: 1,
+    marginBottom: 10,
   },
   entryHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   entryDate: {
-    fontSize: 13,
+    fontSize: 12,
+    fontWeight: "600",
   },
   scoreBadge: {
-    borderRadius: 12,
-    paddingHorizontal: 10,
+    borderRadius: 8,
+    paddingHorizontal: 8,
     paddingVertical: 3,
   },
   scoreText: {
@@ -494,6 +443,6 @@ const styles = StyleSheet.create({
   },
   entryTranscript: {
     fontSize: 14,
-    lineHeight: 22,
+    lineHeight: 20,
   },
 });

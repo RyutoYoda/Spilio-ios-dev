@@ -10,6 +10,7 @@ import "@/lib/_core/nativewind-pressable";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { useFonts, SpaceGrotesk_700Bold } from "@expo-google-fonts/space-grotesk";
 import * as SplashScreen from "expo-splash-screen";
+import { BrandSplash } from "@/components/brand-splash";
 
 SplashScreen.preventAutoHideAsync();
 import {
@@ -35,6 +36,7 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     SpaceGrotesk_700Bold,
   });
+  const [showBrandSplash, setShowBrandSplash] = useState(true);
 
   useEffect(() => {
     if (fontsLoaded) {
@@ -88,8 +90,13 @@ export default function RootLayout() {
     };
   }, [initialInsets, initialFrame]);
 
+  const handleSplashFinish = useCallback(() => {
+    setShowBrandSplash(false);
+  }, []);
+
   const content = (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {showBrandSplash && <BrandSplash onFinish={handleSplashFinish} duration={4000} />}
       <StoreProvider>
         <trpc.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
