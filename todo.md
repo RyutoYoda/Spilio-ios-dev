@@ -80,3 +80,11 @@
 
 ## EAS Build修正（v17）
 - [x] FileSystemUtilities.isReadableFileエラー修正（expo-sharingとexpo-media-libraryを削除、React Native Share APIに置換）
+
+## v1.1 アップデート（審査指摘修正 + 新機能）
+- [x] バックグラウンドオーディオ設定を削除（審査指摘 Guideline 2.5.4 対応）
+- [x] トップ画面改善：Spilioブランドのウェルカムセクションを追加
+- [x] カレンダー機能：ストリーク表示タップで学習履歴カレンダーを表示
+- [x] 復習クイズ改善：穴埋め問題形式に変更
+- [x] 復習回数の強化：最低5〜6回の反復学習（間隔反復）
+- [ ] EAS Build再実行・App Store再提出

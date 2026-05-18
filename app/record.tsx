@@ -124,6 +124,8 @@ export default function RecordScreen() {
           originalSentence: result.transcript,
           correctedSentence: result.correctedTranscript || result.transcript,
           mastered: false,
+          reviewCount: 0,
+          correctCount: 0,
         }));
         addReviewQuestions(questions);
       }

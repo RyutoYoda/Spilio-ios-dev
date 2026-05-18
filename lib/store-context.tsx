@@ -38,6 +38,8 @@ export interface ReviewQuestion {
   correctedSentence?: string; // full corrected sentence
   mastered: boolean;
   lastReviewed?: string;
+  reviewCount: number; // number of times reviewed
+  correctCount: number; // number of times answered correctly
 }
 
 export interface AppState {
@@ -56,8 +58,11 @@ type AppAction =
   | { type: "REMOVE_FAVORITE"; id: string }
   | { type: "ADD_REVIEW_QUESTIONS"; questions: ReviewQuestion[] }
   | { type: "MARK_MASTERED"; questionId: string }
+  | { type: "MARK_REVIEWED"; questionId: string; correct: boolean }
   | { type: "UPDATE_STREAK" }
   | { type: "LOAD_STATE"; state: AppState };
+
+const REQUIRED_REVIEWS = 6;
 
 const initialState: AppState = {
   entries: [],
@@ -91,6 +96,25 @@ function appReducer(state: AppState, action: AppAction): AppState {
           q.id === action.questionId ? { ...q, mastered: true, lastReviewed: new Date().toISOString() } : q
         ),
       };
+    case "MARK_REVIEWED": {
+      return {
+        ...state,
+        reviewQuestions: state.reviewQuestions.map((q) => {
+          if (q.id !== action.questionId) return q;
+          const newReviewCount = (q.reviewCount || 0) + 1;
+          const newCorrectCount = (q.correctCount || 0) + (action.correct ? 1 : 0);
+          // Auto-master after REQUIRED_REVIEWS correct answers
+          const shouldMaster = newCorrectCount >= REQUIRED_REVIEWS;
+          return {
+            ...q,
+            reviewCount: newReviewCount,
+            correctCount: newCorrectCount,
+            lastReviewed: new Date().toISOString(),
+            mastered: shouldMaster,
+          };
+        }),
+      };
+    }
     case "UPDATE_STREAK": {
       const today = new Date().toISOString().split("T")[0];
       if (state.lastActiveDate === today) return state;
@@ -120,6 +144,7 @@ interface StoreContextType {
   removeFavorite: (id: string) => void;
   addReviewQuestions: (questions: ReviewQuestion[]) => void;
   markMastered: (questionId: string) => void;
+  markReviewed: (questionId: string, correct: boolean) => void;
   updateStreak: () => void;
 }
 
@@ -176,13 +201,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "MARK_MASTERED", questionId });
   }, []);
 
+  const markReviewed = useCallback((questionId: string, correct: boolean) => {
+    dispatch({ type: "MARK_REVIEWED", questionId, correct });
+  }, []);
+
   const updateStreak = useCallback(() => {
     dispatch({ type: "UPDATE_STREAK" });
   }, []);
 
   return (
     <StoreContext.Provider
-      value={{ state, addEntry, deleteEntry, addFavorite, removeFavorite, addReviewQuestions, markMastered, updateStreak }}
+      value={{ state, addEntry, deleteEntry, addFavorite, removeFavorite, addReviewQuestions, markMastered, markReviewed, updateStreak }}
     >
       {children}
     </StoreContext.Provider>
